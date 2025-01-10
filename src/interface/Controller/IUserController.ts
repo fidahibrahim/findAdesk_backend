@@ -8,7 +8,6 @@ export interface IRegisterBody {
     message?: string
 }
 
-// Interface for user controller
 export interface IUserController{
     login(req: Request, res: Response): Promise<void>
     register(req: Request, res: Response): Promise<void>

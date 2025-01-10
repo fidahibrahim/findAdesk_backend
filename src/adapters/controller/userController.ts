@@ -1,4 +1,4 @@
-import { IuserUseCase } from "@interfaces/Usecase/IUserUseCase";
+import { IuserUseCase } from "../../interface/Usecase/IUserUseCase";
 import { Request, Response } from "express"
 
 
@@ -15,7 +15,6 @@ export class UserController {
 
     async register(req: Request, res: Response): Promise<void> {
         try {
-
             const { username: name, email, password } = req.body
             if (!name || !email || !password) {
                 res.status(400).json({
@@ -28,7 +27,6 @@ export class UserController {
                 email,
                 password
             }
-            // console.log("data in controller", data)
             const response = await this.userUseCase.register(data)
             if (!response?.status && response.message == "This user already exist") {
                 res.status(403).json({

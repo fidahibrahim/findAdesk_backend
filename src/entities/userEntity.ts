@@ -4,7 +4,6 @@ export default interface Iuser{
     email: string;
     password: string; 
     isVerified?: boolean;
-    isAdmin?: boolean
-      
+    isAdmin?: boolean   
 }
 

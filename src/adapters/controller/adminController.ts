@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { IAdminController } from "@interfaces/Controller/IAdminController";
-import { IadminUseCase } from "@interfaces/Usecase/IadminUseCase";
+import { IAdminController } from "../../interface/Controller/IAdminController";
+import { IadminUseCase } from "../../interface/Usecase/IadminUseCase";
 
 
 export class adminController implements IAdminController {

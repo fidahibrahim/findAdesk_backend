@@ -8,7 +8,6 @@ export interface IotpData {
     createdAt: Date
 }
 
-
 export interface IuserRepository{
     checkEmailExists(email: string): Promise<IUser|null>
     createUser(data: IRegisterBody): Promise<IUser|null>

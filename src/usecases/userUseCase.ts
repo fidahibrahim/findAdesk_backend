@@ -43,20 +43,19 @@ export default class userUseCase implements IuserUseCase {
                 throw new Error("Failed to create user.");
             }
 
-            const otp = await this.otpService.generateOtp();
+            const otp = this.otpService.generateOtp();
             this.userRepository.saveOtp(data.email, otp)
             this.otpService.sendEmail(data.email, otp, data.name)
             return createdUser as IRegisterBody
 
         } catch (error) {
-            throw new Error()
+            throw new Error("error")
         }
     }
 
     async verifyOtp(email: string, otp: string): Promise<otpRes> {
         try {
             const data = await this.userRepository.verifyOtp(email)
-            console.log("dataaaaaaaaa", data)
             if (data?.otp && data.email && data.otp === otp) {
                 const userData = await this.userRepository.updateUserVerified(data.email)
                 console.log("userdaaata", userData);
@@ -80,8 +79,6 @@ export default class userUseCase implements IuserUseCase {
             console.log("user in usecase", user)
             if (user) {
                 const otp = this.otpService.generateOtp()
-                console.log('otp in usecase', otp);
-
                 this.userRepository.saveOtp(email, otp)
                 this.otpService.sendEmail(email, otp, user.name)
                 return "ResendOtp successfull"

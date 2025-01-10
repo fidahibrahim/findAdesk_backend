@@ -1,32 +1,34 @@
-import { IuserRepository } from "../../interface/Repository/userRepository";
-import { IRegisterBody } from "../../interface/Controller/IUserController"
 import { Model } from "mongoose";
-import Iuser from "../../entities/userEntity"
-import { IOtp } from "../../entities/otpEntity"
+import { IOwnerRepository } from "../../interface/Repository/ownerRepository";
+import IOwner from "../../entities/ownerEntity";
+import { IRegisterBody } from "../../interface/Controller/IUserController";
+import { IOtp } from "../../entities/otpEntity";
 
-export default class userRepository implements IuserRepository {
-    private user: Model<Iuser>
+
+export default class ownerRepository implements IOwnerRepository {
+    private owner: Model<IOwner>
     private otp: Model<IOtp>
     constructor(
-        user: Model<Iuser>,
+        owner: Model<IOwner>,
         otp: Model<IOtp>
     ) {
-        this.user = user
+        this.owner = owner
         this.otp = otp
     }
-    async createUser(data: IRegisterBody) {
+    async createOwner(data: IRegisterBody) {
         try {
-            const user = new this.user(data)
-            return await user.save()
+            const owner = new this.owner(data)
+            return await owner.save()
         } catch (error) {
-            throw new Error("Failed to create new User")
+            console.log(error)
+            throw new Error("Failed to create new Owner")
         }
     }
     async checkEmailExists(email: string) {
         try {
-            return await this.user.findOne({ email })
+            return await this.owner.findOne({ email })
         } catch (error) {
-            console.log(error);
+            console.log(error)
             throw new Error("Failed to check email existence")
         }
     }
@@ -46,9 +48,9 @@ export default class userRepository implements IuserRepository {
             throw new Error("Failed to OTP")
         }
     }
-    async updateUserVerified(email: string) {
+    async updateOwnerVerified(email: string) {
         try {
-            return await this.user.findOneAndUpdate(
+            return await this.owner.findOneAndUpdate(
                 { email },
                 { $set: { isVerified: true } },
                 { new: true }

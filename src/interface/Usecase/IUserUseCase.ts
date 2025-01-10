@@ -1,6 +1,5 @@
 import Iuser from "../../entities/userEntity";
 import { IRegisterBody } from "../Controller/IUserController";
-import { IotpData } from "../Repository/userRepository";
 
 
 export interface registerRes {
@@ -31,8 +30,6 @@ export interface loginRes {
     refreshToken?: string
     user?: logUser
 }
-
-
 
 export interface IuserUseCase {
     register(data: IRegisterBody): Promise<IRegisterBody>
