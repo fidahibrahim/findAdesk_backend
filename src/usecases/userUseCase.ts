@@ -58,7 +58,6 @@ export default class userUseCase implements IuserUseCase {
             const data = await this.userRepository.verifyOtp(email)
             if (data?.otp && data.email && data.otp === otp) {
                 const userData = await this.userRepository.updateUserVerified(data.email)
-                console.log("userdaaata", userData);
 
                 if (userData) {
                     console.log(userData, "userdata in verifyusecase")
@@ -76,7 +75,6 @@ export default class userUseCase implements IuserUseCase {
     async resendOtp(email: string) {
         try {
             const user = await this.userRepository.checkEmailExists(email)
-            console.log("user in usecase", user)
             if (user) {
                 const otp = this.otpService.generateOtp()
                 this.userRepository.saveOtp(email, otp)
@@ -131,7 +129,7 @@ export default class userUseCase implements IuserUseCase {
                 return { status: true, message: "Logined Successfully", user: filteredData, token, refreshToken }
             }
             return { status: false, message: "Email Not found" };
-
+            
         } catch (error) {
             return {
                 status: false,

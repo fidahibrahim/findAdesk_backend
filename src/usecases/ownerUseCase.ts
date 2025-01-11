@@ -1,8 +1,9 @@
 import { IRegisterBody } from "../interface/Controller/IUserController";
 import { IOwnerRepository } from "../interface/Repository/ownerRepository";
 import IOwnerUseCase from "../interface/Usecase/IOwnerUseCase";
-import { otpRes } from "../interface/Usecase/IUserUseCase";
+import { loginBody, otpRes } from "../interface/Usecase/IUserUseCase";
 import IhashingService from "../interface/Utils/hashingService";
+import IjwtService from "../interface/Utils/jwtService";
 import IotpService from "../interface/Utils/otpService";
 
 
@@ -10,14 +11,17 @@ export default class ownerUseCase implements IOwnerUseCase {
     private ownerRepository: IOwnerRepository;
     private hashingService: IhashingService
     private otpService: IotpService
+    private jwtService: IjwtService
     constructor(
         ownerRepository: IOwnerRepository,
         HashingService: IhashingService,
-        otpService: IotpService
+        otpService: IotpService,
+        jwtService: IjwtService
     ) {
         this.ownerRepository = ownerRepository
         this.hashingService = HashingService
         this.otpService = otpService
+        this.jwtService = jwtService
     }
     async register(data: IRegisterBody): Promise<IRegisterBody> {
         try {
@@ -48,12 +52,11 @@ export default class ownerUseCase implements IOwnerUseCase {
             throw new Error()
         }
     }
-    async verifyOtp(email: string, otp: string): Promise<otpRes> {
+    async ownerVerifyOtp(email: string, otp: string): Promise<otpRes> {
         try {
             const data = await this.ownerRepository.verifyOtp(email)
             if (data?.otp && data.email && data.otp === otp) {
                 const ownerData = await this.ownerRepository.updateOwnerVerified(data.email)
-                console.log("owwwwdaaata", ownerData);
 
                 if (ownerData) {
                     console.log(ownerData, "ownerData in verifyusecase")
@@ -64,7 +67,7 @@ export default class ownerUseCase implements IOwnerUseCase {
             }
             return { status: false, message: "Incorrect OTP or email not found" };
         } catch (error) {
-            throw Error()
+            throw Error("verify otp failed")
         }
     }
     async resendOtp(email: string): Promise<string | null> {
@@ -80,6 +83,57 @@ export default class ownerUseCase implements IOwnerUseCase {
         } catch (error) {
             console.log(error);
             return null
+        }
+    }
+    async login(data: loginBody) {
+        console.log("daaaaaa",data)
+        try {
+            const ownerData = await this.ownerRepository.checkEmailExists(data.email)
+            console.log(ownerData,"ownerdaaaa")
+            if (ownerData) {
+                if (!ownerData.password) {
+                    return {
+                        status: false,
+                        message: "Try Google Authentication",
+                        user: ownerData
+                    }
+                }
+                const status = await this.hashingService.compare(
+                    data.password,
+                    ownerData.password
+                )
+                if (!status) {
+                    return {
+                        status: false,
+                        message: "Incorrect Password"
+                    }
+                }
+                if (ownerData.isVerified == false) {
+                    const otp = this.otpService.generateOtp()
+                    this.ownerRepository.saveOtp(ownerData.email, otp)
+                    this.otpService.sendEmail(ownerData.email, otp, ownerData.name)
+                    return { status: false, message: "Otp is not verified" }
+                }
+                const payload = {
+                    userId: ownerData._id,
+                    name: ownerData.name
+                }
+                const token = this.jwtService.generateToken(payload)
+                const refreshToken = this.jwtService.generateRefreshToken(payload)
+                const filteredData = {
+                    _id: ownerData._id,
+                    name: ownerData.name,
+                    email: ownerData.email
+                }
+                return { status: true, message: "Logined Successfully", user: filteredData, token, refreshToken }
+            }
+            return { status: false, message: "Email Not found" };
+
+        } catch (error) {
+            return {
+                status: false,
+                message: "",
+            };
         }
     }
 }

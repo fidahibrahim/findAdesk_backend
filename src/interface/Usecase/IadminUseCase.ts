@@ -1,10 +1,9 @@
+import Iuser from "../../entities/userEntity"
 
 export interface logAdmin {
     name: string
     email: string
 }
-
-
 
 export interface returnData {
     message: string,
@@ -15,5 +14,6 @@ export interface returnData {
 
 export interface IadminUseCase {
     login(email: string, password: string): Promise<returnData | void>
-    getUsers(): void
+    getUsers(search: string, page: number, limit: number): Promise<{ users: Iuser[]; totalPages: number }>
+    blockUser(id: string): Promise<string | null>
 }

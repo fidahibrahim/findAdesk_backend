@@ -2,6 +2,7 @@ import { IadminUseCase, returnData } from "../interface/Usecase/IadminUseCase";
 import IadminRepository from "../interface/Repository/adminRepository";
 import IhashingService from "../interface/Utils/hashingService"
 import IjwtService from "../interface/Utils/jwtService"
+import Iuser from "../entities/userEntity";
 
 
 export default class adminUseCase implements IadminUseCase {
@@ -56,12 +57,27 @@ export default class adminUseCase implements IadminUseCase {
             console.log(error);
         }
     }
-    async getUsers() {
+    async getUsers(search: string, page: number, limit: number): Promise<{ users: Iuser[]; totalPages: number }> {
         try {
-            const users = this.adminRepository.getAllUsers()
-            return users
+            const { users, totalCount } = await this.adminRepository.getAllUsers(search, page, limit)
+            const totalPages = Math.ceil(totalCount / limit);
+            return { users, totalPages };
         } catch (error) {
             console.log(error);
+            return { users: [], totalPages: 0 };
+        }
+    }
+    async blockUser(userId: string) {
+        try {
+            const response = await this.adminRepository.blockOrUnBlockUser(userId)
+            if (response?.isBlocked) {
+                return "blocked successfully";
+            } else {
+                return "unblocked successfully";
+            }
+        } catch (error) {
+            console.log(error)
+            return null
         }
     }
 }

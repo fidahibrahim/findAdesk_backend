@@ -7,6 +7,9 @@ export class ownerController {
     constructor(ownerUseCase: IOwnerUseCase) {
         this.ownerUseCase = ownerUseCase
         this.register = this.register.bind(this)
+        this.verifyOtp = this.verifyOtp.bind(this)
+        this.resendOtp = this.resendOtp.bind(this)
+        this.login = this.login.bind(this)
     }
 
     async register(req: Request, res: Response): Promise<void> {
@@ -48,7 +51,7 @@ export class ownerController {
                 res.status(400).json({ status: false, message: "Email and OTP are required" });
                 return;
             }
-            const response = await this.ownerUseCase.verifyOtp(email, otp)
+            const response = await this.ownerUseCase.ownerVerifyOtp(email, otp)
             if (!response?.status) {
                 res.status(401).json(response)
                 return
@@ -58,7 +61,7 @@ export class ownerController {
             res.json(error)
         }
     }
-    async resendOtp(req: Request, res: Response){
+    async resendOtp(req: Request, res: Response) {
         try {
             const { email } = req.body
             const response = await this.ownerUseCase.resendOtp(email)
@@ -69,6 +72,48 @@ export class ownerController {
             }
         } catch (error) {
             res.json(error)
+        }
+    }
+    async login(req: Request, res: Response) {
+        try {
+            const { email, password } = req.body
+            const data = {
+                email,
+                password
+            }
+            const response = await this.ownerUseCase.login(data)
+            if (response?.status && response.message == "Logined Successfully") {
+                const { token, refreshToken } = response
+                res.cookie("ownerToken", token, {
+                    httpOnly: true,
+                    maxAge: 360000,
+                }).cookie("ownerRefreshToken", refreshToken, {
+                    httpOnly: true,
+                    maxAge: 30 * 24 * 60 * 60 * 1000
+                })
+                res.status(200).json({ status: true, message: 'Logined Successfully', user: response.user })
+            } else if (
+                !response?.status && response?.message == "Otp is not verified"
+            ) {
+                res.cookie("otpEmail", email, { maxAge: 3600000 })
+                res.status(403).json({ isVerified: "false" });
+            } else if (response?.status) {
+                res.status(200).json(response);
+            } else if (!response?.status && response?.message == "Incorrect Password") {
+                res.status(403).json(response);
+            } else {
+                res.status(403).json(response);
+            }
+        } catch (error) {
+            res.json(error)
+        }
+    }
+    async logout(req: Request, res: Response) {
+        try {
+            res.cookie("ownerToken", "", { httpOnly: true, expires: new Date() })
+            res.status(200).json({ status: true })
+        } catch (error) {
+            console.log(error)
         }
     }
 }

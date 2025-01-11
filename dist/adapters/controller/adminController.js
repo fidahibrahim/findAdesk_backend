@@ -45,7 +45,6 @@ class adminController {
     async getUsers(req, res) {
         try {
             const users = this.adminUsecase.getUsers();
-            console.log(users, "uuuuuuu");
             res.status(200).json({ users });
         }
         catch (error) {

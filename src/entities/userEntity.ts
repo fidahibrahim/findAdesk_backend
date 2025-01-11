@@ -5,5 +5,6 @@ export default interface Iuser{
     password: string; 
     isVerified?: boolean;
     isAdmin?: boolean   
+    isBlocked?: boolean
 }
 

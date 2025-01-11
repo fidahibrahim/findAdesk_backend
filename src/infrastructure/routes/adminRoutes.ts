@@ -24,6 +24,7 @@ adminRouter.post('/logout', AdminController.logout)
 
 // user management 
 adminRouter.get("/getUsers", AdminController.getUsers)
+adminRouter.patch("/blockUser", AdminController.blockUser)
 
 
 export default adminRouter

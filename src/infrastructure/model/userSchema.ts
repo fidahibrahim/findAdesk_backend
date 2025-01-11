@@ -20,6 +20,11 @@ const userSchema = new Schema<Iuser>({
         default: false,
         required: true
     },
+    isBlocked: {
+        type: Boolean,
+        default: false,
+        required: true
+    },
     isAdmin: {
         type: Boolean,
         default: false,

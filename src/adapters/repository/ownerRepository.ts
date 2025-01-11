@@ -25,6 +25,7 @@ export default class ownerRepository implements IOwnerRepository {
         }
     }
     async checkEmailExists(email: string) {
+        console.log(email,"iiiiiiii")
         try {
             return await this.owner.findOne({ email })
         } catch (error) {
