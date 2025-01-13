@@ -3,6 +3,7 @@ import { IRegisterBody } from "../../interface/Controller/IUserController"
 import { Model } from "mongoose";
 import Iuser from "../../entities/userEntity"
 import { IOtp } from "../../entities/otpEntity"
+import { GoogleProfileResponse } from "../../interface/Usecase/IUserUseCase";
 
 export default class userRepository implements IuserRepository {
     private user: Model<Iuser>
@@ -55,6 +56,28 @@ export default class userRepository implements IuserRepository {
             )
         } catch (error) {
             throw new Error("Failed to update user verified ");
+        }
+    }
+    async googleUser(data: GoogleProfileResponse) {
+        try {
+            const existUser = await this.user.findOne({ email: data.email })
+            let user
+            if(!existUser) {
+                const newUser = new this.user({
+                    name: data.name,
+                    email: data.email,
+                    image: data.picture,
+                    isVerified: true
+                })
+                user = await newUser.save()
+                console.log("user neeew", user)
+            } else {
+                user = existUser
+            }
+            return user
+        } catch (error) {
+            console.log(error)
+            throw new Error('Error finding user');
         }
     }
 }

@@ -1,10 +1,13 @@
-import { IuserUseCase, loginBody, otpRes } from "../interface/Usecase/IUserUseCase";
+import { GoogleProfileResponse, IuserUseCase, loginBody, otpRes } from "../interface/Usecase/IUserUseCase";
 import { IuserRepository } from "../interface/Repository/userRepository"
 import { IRegisterBody } from "../interface/Controller/IUserController";
 import Iuser from "../entities/userEntity";
 import IhashingService from "../interface/Utils/hashingService"
 import IotpService from "../interface/Utils/otpService"
 import IjwtService from "../interface/Utils/jwtService"
+import axios from "axios";
+import { response } from "express";
+
 
 export default class userUseCase implements IuserUseCase {
     private userRepository: IuserRepository;
@@ -66,7 +69,7 @@ export default class userUseCase implements IuserUseCase {
                     return { status: false, message: "incorrect otp", }
                 }
             }
-            return { status: false, message: "Incorrect OTP or email not found" };
+            return { status: false, message: "Incorrect OTP" };
         } catch (error) {
             throw Error()
         }
@@ -121,7 +124,7 @@ export default class userUseCase implements IuserUseCase {
                 }
                 const token = this.jwtService.generateToken(payload)
                 const refreshToken = this.jwtService.generateRefreshToken(payload)
-                const filteredData  = {
+                const filteredData = {
                     _id: user._id,
                     name: user.name,
                     email: user.email,
@@ -129,12 +132,43 @@ export default class userUseCase implements IuserUseCase {
                 return { status: true, message: "Logined Successfully", user: filteredData, token, refreshToken }
             }
             return { status: false, message: "Email Not found" };
-            
+
         } catch (error) {
             return {
                 status: false,
                 message: "",
             };
+        }
+    }
+
+    async fetchGoogleUserDetails(access_token: string) {
+        try {
+            const response = await axios.get<GoogleProfileResponse>(
+                `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${access_token}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                        Accept: 'application/json',
+                    },
+                }
+            )
+            const googleUser = await this.userRepository.googleUser(response.data)
+            console.log(googleUser, "goooogle user in usecase")
+            const payload = {
+                userId: googleUser._id,
+                name: googleUser.name,
+            }
+            const token = this.jwtService.generateToken(payload)
+            const refreshToken = this.jwtService.generateRefreshToken(payload)
+            const filteredData = {
+                _id: googleUser._id,
+                name: googleUser.name,
+                email: googleUser.email,
+            }
+            return { status: true, message: "Successfull", token, refreshToken, user: filteredData }
+        } catch (error) {
+            console.log(error)
+            return null
         }
     }
 }

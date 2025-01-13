@@ -1,16 +1,20 @@
 import { Model } from "mongoose";
 import IadminRepository from "../../interface/Repository/adminRepository";
 import Iuser from "../../entities/userEntity";
+import IOwner from "../../entities/ownerEntity";
 
 export default class adminRepository implements IadminRepository {
     private admin: Model<Iuser>
     private user: Model<Iuser>
+    private owner: Model<IOwner>
     constructor(
         admin: Model<Iuser>,
-        user: Model<Iuser>
+        user: Model<Iuser>,
+        owner: Model<IOwner>
     ) {
         this.admin = admin
         this.user = user
+        this.owner = owner
     }
 
     async checkEmailExists(email: string) {
@@ -51,4 +55,35 @@ export default class adminRepository implements IadminRepository {
             return null
         }
     }
+    async getAllOwners(search: string, page: number, limit: number): Promise<{ owners: IOwner[]; totalCount: number; }> {
+        try {
+            const filter = search
+                ? { $or: [{ name: { $regex: search, $options: "i" } }, { email: { $regex: search, $options: "i" } }] }
+                : {};
+            const owners = await this.owner
+                .find(filter)
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .sort({ _id: -1 });
+            const totalCount = await this.owner.countDocuments(filter)
+            return { owners, totalCount }
+        } catch (error) {
+            console.log(error)
+            throw new Error("Error fetching owners from database")
+        }
+    }
+    async blockOrUnBlockOwner(ownerId: string): Promise<IOwner | null> {
+        try {
+            const owner = await this.owner.findById(ownerId)
+            return await this.owner.findByIdAndUpdate(
+                { _id: owner?._id },
+                { $set: { isBlocked: !owner?.isBlocked } },
+                { new: true }
+            )
+        } catch (error) {
+            console.log(error);
+            return null
+        }
+    }
 }
+

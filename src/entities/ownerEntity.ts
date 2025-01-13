@@ -5,4 +5,5 @@ export default interface IOwner {
     password: string;
     isVerified?: boolean;
     isAdmin?: boolean
+    isBlocked?: boolean
 }

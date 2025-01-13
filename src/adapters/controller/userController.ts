@@ -11,6 +11,7 @@ export class UserController {
         this.verifyOtp = this.verifyOtp.bind(this)
         this.resendOtp = this.resendOtp.bind(this)
         this.login = this.login.bind(this)
+        this.googleLogin = this.googleLogin.bind(this)
     }
 
     async register(req: Request, res: Response): Promise<void> {
@@ -123,4 +124,24 @@ export class UserController {
         }
     }
 
+    async googleLogin(req: Request, res: Response){
+        try {
+            const { access_token } = req.body
+            const response = await this.userUseCase.fetchGoogleUserDetails(access_token)
+            if (response?.status && response.message == "Successfull") {
+                const { token, refreshToken } = response
+                res.cookie("userToken", token, {
+                    httpOnly: true,
+                    maxAge: 360000,
+                }).cookie("userRefreshToken", refreshToken, {
+                    httpOnly: true,
+                    maxAge: 30 * 24 * 60 * 60 * 1000
+                })
+                res.status(200).json({ status: true, message: 'Successfull', user: response.user })
+            } 
+            
+        } catch (error) {
+            console.log(error)
+        }
+    }
 }

@@ -1,5 +1,6 @@
 import { IRegisterBody } from "../Controller/IUserController";
 import IUser from '../../entities/userEntity'
+import { GoogleProfileResponse } from "../Usecase/IUserUseCase";
 
 export interface IotpData {
     _id: string
@@ -14,4 +15,5 @@ export interface IuserRepository{
     saveOtp(email: string, otp: string): void
     verifyOtp(email: string): Promise<IotpData|null>
     updateUserVerified(email: string): Promise<IUser|null>
+    googleUser(data: GoogleProfileResponse): Promise<any>
 }

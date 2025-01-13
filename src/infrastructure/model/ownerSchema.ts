@@ -19,6 +19,10 @@ const ownerSchema = new Schema<IOwner>({
         default: false,
         required: true
     },
+    isBlocked: {
+        type: Boolean,
+        default: false
+    }
 })
 
 const ownerModel = mongoose.model<IOwner>('Owner', ownerSchema)

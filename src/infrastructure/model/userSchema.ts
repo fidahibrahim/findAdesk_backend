@@ -13,7 +13,10 @@ const userSchema = new Schema<Iuser>({
     },
     password: {
         type: String,
-        required: true
+    },
+    image: {
+        type: String,
+        default: " https://github.com/shadcn.png "
     },
     isVerified: {
         type: Boolean,

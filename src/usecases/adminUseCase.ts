@@ -3,6 +3,7 @@ import IadminRepository from "../interface/Repository/adminRepository";
 import IhashingService from "../interface/Utils/hashingService"
 import IjwtService from "../interface/Utils/jwtService"
 import Iuser from "../entities/userEntity";
+import IOwner from "../entities/ownerEntity";
 
 
 export default class adminUseCase implements IadminUseCase {
@@ -77,6 +78,29 @@ export default class adminUseCase implements IadminUseCase {
             }
         } catch (error) {
             console.log(error)
+            return null
+        }
+    }
+    async getOwners(search: string, page: number, limit: number): Promise<{ owners: IOwner[]; totalPages: number; }> {
+        try {
+            const { owners, totalCount } = await this.adminRepository.getAllOwners(search, page, limit)
+            const totalPages = Math.ceil(totalCount / limit)
+            return { owners, totalPages }
+        } catch (error) {
+            console.log(error)
+            return { owners: [], totalPages: 0 }
+        }
+    }
+    async blockOwner(ownerId: string): Promise<string | null> {
+        try {
+            const response = await this.adminRepository.blockOrUnBlockOwner(ownerId)
+            if (response?.isBlocked) {
+                return "blocked successfully";
+            } else {
+                return "unblocked successfully";
+            }
+        } catch (error) {
+            console.log(error);
             return null
         }
     }

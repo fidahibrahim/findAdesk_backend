@@ -31,11 +31,26 @@ export interface loginRes {
     user?: logUser
 }
 
+export interface GoogleProfileResponse {
+    id: string;
+    email: string;
+    verified_email: boolean;
+    name: string;
+    given_name: string;
+    family_name: string;
+    picture: string;
+  }
+
+  export interface GoogleRes {
+    status: boolean,
+  }
+
 export interface IuserUseCase {
     register(data: IRegisterBody): Promise<IRegisterBody>
     verifyOtp(email: string, otp: string): Promise<otpRes>
     resendOtp(email: string): Promise<string | null>
     login(data: loginBody): Promise<loginRes | null>
+    fetchGoogleUserDetails(access_token: string): Promise<loginRes | null>
 }
 
 
