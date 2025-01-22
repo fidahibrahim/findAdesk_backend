@@ -38,12 +38,12 @@ export interface GoogleProfileResponse {
     name: string;
     given_name: string;
     family_name: string;
-    picture: string;
-  }
+    picture: string;
+}
 
-  export interface GoogleRes {
+export interface GoogleRes {
     status: boolean,
-  }
+}
 
 export interface IuserUseCase {
     register(data: IRegisterBody): Promise<IRegisterBody>
@@ -51,6 +51,7 @@ export interface IuserUseCase {
     resendOtp(email: string): Promise<string | null>
     login(data: loginBody): Promise<loginRes | null>
     fetchGoogleUserDetails(access_token: string): Promise<loginRes | null>
+    validateForgotPassword(email: string): Promise<string | null>
 }
 
 

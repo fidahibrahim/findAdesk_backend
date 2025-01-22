@@ -4,7 +4,6 @@ import IOwner from "../../entities/ownerEntity";
 import { IRegisterBody } from "../../interface/Controller/IUserController";
 import { IOtp } from "../../entities/otpEntity";
 
-
 export default class ownerRepository implements IOwnerRepository {
     private owner: Model<IOwner>
     private otp: Model<IOtp>

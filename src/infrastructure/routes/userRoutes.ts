@@ -7,6 +7,7 @@ import HashingService from "../utils/HashingService"
 import OtpSchema from "../model/otpSchema"
 import OtpService from "../utils/otpService"
 import JwtToken from "../utils/jwtService"
+import authenticateUser from '../middleware/userAuth'
 
 const userRouter: Router = express.Router()
 
@@ -30,5 +31,8 @@ userRouter.post('/resendOtp', userController.resendOtp)
 userRouter.post('/login', userController.login)
 userRouter.post('/logout', userController.logout)
 userRouter.post('/googleLogin', userController.googleLogin)
+// userRouter.use(authenticateUser)
+userRouter.post('/forgotPassword', userController.forgotPassword)
+
 
 export default userRouter

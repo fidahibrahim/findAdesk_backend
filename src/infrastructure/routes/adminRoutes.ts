@@ -6,6 +6,7 @@ import adminRepository from "../../adapters/repository/adminRepository"
 import adminUseCase from "../../usecases/adminUseCase"
 import JwtToken from '../utils/jwtService'
 import HashingService from "../utils/HashingService"
+import adminAuth from "../middleware/adminAuth"
 
 const JwtService = new JwtToken()
 const HashingServiceInstance = new HashingService()
@@ -21,15 +22,15 @@ const adminRouter: Router = express.Router()
 const AdminController = new adminController(AdminUseCaseInstance)
 
 adminRouter.post('/login', AdminController.login)
-adminRouter.post('/logout', AdminController.logout)
+adminRouter.post('/logout', adminAuth, AdminController.logout)
 
 // user management 
-adminRouter.get("/getUsers", AdminController.getUsers)
-adminRouter.patch("/blockUser", AdminController.blockUser)
+adminRouter.get("/getUsers", adminAuth, AdminController.getUsers)
+adminRouter.patch("/blockUser", adminAuth, AdminController.blockUser)
 
 // owner management
-adminRouter.get("/getOwners", AdminController.getOwners)
-adminRouter.patch("/blockOwner", AdminController.blockOwner)
+adminRouter.get("/getOwners", adminAuth,  AdminController.getOwners)
+adminRouter.patch("/blockOwner", adminAuth, AdminController.blockOwner)
 
 
 

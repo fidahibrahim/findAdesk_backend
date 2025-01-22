@@ -8,6 +8,7 @@ export class adminController implements IAdminController {
     constructor(adminUsecase: IadminUseCase) {
         this.adminUsecase = adminUsecase
         this.login = this.login.bind(this)
+        this.logout = this.logout.bind(this)
         this.getUsers = this.getUsers.bind(this)
         this.blockUser = this.blockUser.bind(this)
         this.getOwners = this.getOwners.bind(this)
@@ -40,8 +41,11 @@ export class adminController implements IAdminController {
     }
     async logout(req: Request, res: Response) {
         try {
+            console.log(req.cookies,"cookiee before")
             res.cookie("adminToken", "", { httpOnly: true, expires: new Date() })
             res.status(200).json({ status: true })
+            console.log(req.cookies,"cookiee after logout")
+
         } catch (error) {
             console.log(error)
         }

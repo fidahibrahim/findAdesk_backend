@@ -58,4 +58,52 @@ export default class OtpService implements IotpService {
             throw error;
         }
     }
+    async sendEmailForgotPassword(resetLink: string, email: string) {
+        try {
+            const transporter = nodemailer.createTransport({
+                service: "gmail",
+                host: "smtp.gmail.com",
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.NODE_MAILER_EMAIL,
+                    pass: process.env.NODE_MAILER_PASS,
+                },
+            })
+            const mailGenerator = new Mailgen({
+                theme: "default",
+                product: {
+                    name: "findAdesk",
+                    link: "https://mailgen.js/"
+                }
+            })
+            const emailContent = {
+                body: {
+                    name: "User",
+                    intro: "You are receiving this email because we received a password reset request from your account.",
+                    action: {
+                        instructions: "To reset your password, here is the Reset Link:",
+                        button: {
+                            color: "#22BC66",
+                            text: "Reset Password",
+                            link: resetLink,
+                        },
+                    },
+                    outro: "If you didn't request a password reset, no further action is required.",
+                },
+            };
+            const html = mailGenerator.generate(emailContent);
+            const message = {
+                from: process.env.NODE_MAILER_EMAIL,
+                to: email,
+                subject: 'findAdesk Password Reset',
+                html: html
+            }
+            await transporter.sendMail(message)
+
+        } catch (error) {
+            console.error("Error sending password reset email:", error);
+            throw error;
+        }
+    }
 }

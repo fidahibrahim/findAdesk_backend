@@ -7,6 +7,7 @@ import { ownerController } from "../../adapters/controller/ownerController"
 import OtpModel from "../model/otpSchema"
 import OtpService from "../utils/otpService"
 import JwtService from "../utils/jwtService"
+import { workspaceController } from "../../adapters/controller/workspaceController"
 
 
 const ownerRouter: Router = express.Router()

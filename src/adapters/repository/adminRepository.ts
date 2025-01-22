@@ -72,6 +72,13 @@ export default class adminRepository implements IadminRepository {
             throw new Error("Error fetching owners from database")
         }
     }
+    async checkUserExists(id: string) {
+        try {
+            return await this.admin.findOne({ _id: id })
+        } catch (error) {
+            throw new Error("Failed to check the admin exists")
+        }
+    }
     async blockOrUnBlockOwner(ownerId: string): Promise<IOwner | null> {
         try {
             const owner = await this.owner.findById(ownerId)

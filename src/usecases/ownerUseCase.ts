@@ -6,7 +6,6 @@ import IhashingService from "../interface/Utils/hashingService";
 import IjwtService from "../interface/Utils/jwtService";
 import IotpService from "../interface/Utils/otpService";
 
-
 export default class ownerUseCase implements IOwnerUseCase {
     private ownerRepository: IOwnerRepository;
     private hashingService: IhashingService
@@ -116,7 +115,8 @@ export default class ownerUseCase implements IOwnerUseCase {
                 }
                 const payload = {
                     userId: ownerData._id,
-                    name: ownerData.name
+                    name: ownerData.name,
+                    role: "owner"
                 }
                 const token = this.jwtService.generateToken(payload)
                 const refreshToken = this.jwtService.generateRefreshToken(payload)

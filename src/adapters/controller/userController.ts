@@ -12,6 +12,7 @@ export class UserController {
         this.resendOtp = this.resendOtp.bind(this)
         this.login = this.login.bind(this)
         this.googleLogin = this.googleLogin.bind(this)
+        this.forgotPassword = this.forgotPassword.bind(this)
     }
 
     async register(req: Request, res: Response): Promise<void> {
@@ -98,6 +99,11 @@ export class UserController {
                 })
                 res.status(200).json({ status: true, message: 'Logined Successfully', user: response.user })
             } else if (
+                response?.status === false && response.message == "Your account is blocked. Please contact support."
+            ) {
+                res.status(403).json({ status: false, message: response.message });
+            }
+            else if (
                 !response?.status && response?.message == "Otp is not verified"
             ) {
                 res.cookie("otpEmail", email, { maxAge: 3600000 })
@@ -110,13 +116,13 @@ export class UserController {
                 res.status(403).json(response);
             }
         } catch (error) {
-            console.log(error); 
+            console.log(error);
         }
     }
 
-    async logout(req: Request, res: Response){
+    async logout(req: Request, res: Response) {
         try {
-            res.cookie("userToken","",{ httpOnly:true, expires: new Date()}).cookie("userRefreshToken","",{ httpOnly:true, expires: new Date() })
+            res.cookie("userToken", "", { httpOnly: true, expires: new Date() }).cookie("userRefreshToken", "", { httpOnly: true, expires: new Date() })
             res.status(200).json({ status: true })
         } catch (error) {
             console.log(error);
@@ -124,7 +130,7 @@ export class UserController {
         }
     }
 
-    async googleLogin(req: Request, res: Response){
+    async googleLogin(req: Request, res: Response) {
         try {
             const { access_token } = req.body
             const response = await this.userUseCase.fetchGoogleUserDetails(access_token)
@@ -138,8 +144,26 @@ export class UserController {
                     maxAge: 30 * 24 * 60 * 60 * 1000
                 })
                 res.status(200).json({ status: true, message: 'Successfull', user: response.user })
-            } 
-            
+            }
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async forgotPassword(req: Request, res: Response) {
+        try {
+            const { email } = req.body
+            const response = await this.userUseCase.validateForgotPassword(email)
+            if (response == "Email sended to the user") {
+                res.status(200).json({ message: "email send succesfully" });
+                return;
+            } else if (response == "user not exist with this email") {
+                res
+                    .status(403)
+                    .json({ message: "User not exist with this email" });
+                return;
+            }
         } catch (error) {
             console.log(error)
         }

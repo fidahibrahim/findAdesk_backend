@@ -95,6 +95,12 @@ export default class userUseCase implements IuserUseCase {
         try {
             const user = await this.userRepository.checkEmailExists(data.email)
             if (user) {
+                if (user.isBlocked) {
+                    return {
+                        status: false,
+                        message: "Your account is blocked. Please contact support."
+                    }
+                }
                 if (!user.password) {
                     return {
                         status: false,
@@ -121,6 +127,7 @@ export default class userUseCase implements IuserUseCase {
                 const payload = {
                     userId: user._id,
                     name: user.name,
+                    role: "user",
                 }
                 const token = this.jwtService.generateToken(payload)
                 const refreshToken = this.jwtService.generateRefreshToken(payload)
@@ -157,6 +164,7 @@ export default class userUseCase implements IuserUseCase {
             const payload = {
                 userId: googleUser._id,
                 name: googleUser.name,
+                role: "user"
             }
             const token = this.jwtService.generateToken(payload)
             const refreshToken = this.jwtService.generateRefreshToken(payload)
@@ -166,6 +174,27 @@ export default class userUseCase implements IuserUseCase {
                 email: googleUser.email,
             }
             return { status: true, message: "Successfull", token, refreshToken, user: filteredData }
+        } catch (error) {
+            console.log(error)
+            return null
+        }
+    }
+    async validateForgotPassword(email: string): Promise<string | null> {
+        try {
+            const user = await this.userRepository.checkEmailExists(email)
+            if(!user){
+                return "User not exist with this email"
+            }
+            let data = {
+                userId: user?._id as string,
+                name: user?.name as string,
+                role: 'user',
+            }
+            const exp = "3m";
+            const token = await this.jwtService.generateTokenForgot(data, exp)
+            const resetLink = `http://localhost:5000/resetPassword/${token}`
+            await this.otpService.sendEmailForgotPassword(resetLink, user.email)
+            return "Email sended to the user";
         } catch (error) {
             console.log(error)
             return null
