@@ -1,5 +1,8 @@
-export default interface IWorkspace {
+import { Document, ObjectId } from "mongoose";
+
+export interface IWorkspace extends Document {
     _id: string;
+    ownerId: string;
     workspaceName: string;
     workspaceType: string;
     capacity: number;

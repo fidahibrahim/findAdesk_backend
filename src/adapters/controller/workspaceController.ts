@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { AuthenticatedRequest } from "../../infrastructure/middleware/ownerAuth";
 import IWorkspaceUseCase from "../../interface/Usecase/IWorkspaceUseCase";
 
 export class workspaceController {
@@ -9,15 +10,18 @@ export class workspaceController {
         this.addWorkspace = this.addWorkspace.bind(this)
     }
 
-    async addWorkspace(req: Request, res: Response) {
+    async addWorkspace(req: AuthenticatedRequest, res: Response) {
         try {
+
             const formData = {
                 ...req.body,
-                images: req.files
+                images: req.files,
+                ownerId: req.owner?.userId
             }
-            console.log(formData)
+            const response = await this.workspaceUseCase.addWorkspace(formData)
+            console.log(response)
         } catch (error) {
-           console.log(error) 
+            console.log(error)
         }
     }
 }

@@ -2,8 +2,12 @@ import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import ownerModel from "../model/ownerSchema";
 
-interface AuthenticatedRequest extends Request {
-    owner?: JwtPayload | string
+interface OwnerPayload extends JwtPayload {
+    userId: string;
+}
+
+export interface AuthenticatedRequest extends Request {
+    owner?: OwnerPayload;
 }
 
 const ownerAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
@@ -19,10 +23,17 @@ const ownerAuth = async (req: AuthenticatedRequest, res: Response, next: NextFun
         return;
     }
     try {
-        const decoded = jwt.verify(token, secretKey)
+        const decoded = jwt.verify(token, secretKey) as OwnerPayload;
+
+        if (!decoded || typeof decoded !== 'object' || !decoded.userId) {
+            res.status(401).json({ message: 'Invalid token structure.' });
+            return;
+        }
+
         req.owner = decoded;
-        if(typeof req.owner === 'object' && req.owner._id ) {
-            const owner = await ownerModel.findById(req.owner._id);
+        
+        if(typeof req.owner === 'object' && req.owner.userId) {
+            const owner = await ownerModel.findById(req.owner.userId);
             if(!owner){
                 res.status(404).json({ message:'Owner not found.' })
                 return

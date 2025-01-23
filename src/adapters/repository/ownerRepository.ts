@@ -24,7 +24,6 @@ export default class ownerRepository implements IOwnerRepository {
         }
     }
     async checkEmailExists(email: string) {
-        console.log(email,"iiiiiiii")
         try {
             return await this.owner.findOne({ email })
         } catch (error) {
@@ -32,6 +31,16 @@ export default class ownerRepository implements IOwnerRepository {
             throw new Error("Failed to check email existence")
         }
     }
+    
+    async checkOwnerExists(id: string) {
+        try {
+            return await this.owner.findById(id)
+        } catch (error) {
+            console.log(error)
+            throw new Error("Failed to check email existence")
+        }
+    }
+
     async saveOtp(email: string, otp: string) {
         try {
             await this.otp.deleteMany({ email });

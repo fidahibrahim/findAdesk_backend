@@ -22,7 +22,7 @@ export async function sendObjectToS3(name:string,type:string,buffer:Buffer){
     Bucket : bucketName,
     Key : name,
     Body : buffer,
-    ContentType : type
+    ContentType : type,
   }
   const comand = new PutObjectCommand(params)
   await s3.send(comand)

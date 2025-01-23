@@ -1,7 +1,12 @@
 import mongoose, { Schema } from "mongoose";
-import IWorkspace from "../../entities/workspaceEntity";
+import { IWorkspace } from "../../entities/workspaceEntity";
 
-const workspaceSchema = new Schema <IWorkspace>({
+const workspaceSchema = new Schema ({
+    ownerId: {
+        type: mongoose.Types.ObjectId,
+        ref: "Owner",
+        required: true
+    },
     workspaceName: {
         type: String,
         required: true
@@ -48,6 +53,7 @@ const workspaceSchema = new Schema <IWorkspace>({
     },
     workspaceRules: {
         type: String,
+        default: ''
     },
     aminities: {
         type: [String],
