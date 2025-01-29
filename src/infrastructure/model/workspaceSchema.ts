@@ -11,6 +11,10 @@ const workspaceSchema = new Schema ({
         type: String,
         required: true
     },
+    workspaceMail: {
+        type: String,
+        required: true
+    },
     workspaceType: {
         type: String,
         required: true
@@ -60,6 +64,13 @@ const workspaceSchema = new Schema ({
         required: true
     },
     images: [{ type: String }],
+    status: {
+        type: String,
+        enum: ["pending", "approved", "rejected"],
+        default: "pending"
+    }
+},{
+    timestamps: true
 })
 
 const workspaceModel = mongoose.model<IWorkspace>('Workspace', workspaceSchema)

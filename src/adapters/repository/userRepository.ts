@@ -20,15 +20,14 @@ export default class userRepository implements IuserRepository {
             const user = new this.user(data)
             return await user.save()
         } catch (error) {
-            throw new Error("Failed to create new User")
+            throw error
         }
     }
     async checkEmailExists(email: string) {
         try {
             return await this.user.findOne({ email })
         } catch (error) {
-            console.log(error);
-            throw new Error("Failed to check email existence")
+            throw error
         }
     }
     async saveOtp(email: string, otp: string) {
@@ -37,14 +36,14 @@ export default class userRepository implements IuserRepository {
             const newOtp = new this.otp({ email, otp });
             await newOtp.save()
         } catch (error) {
-            throw new Error("Failed to store Otp")
+            throw error
         }
     }
     async verifyOtp(email: string) {
         try {
             return await this.otp.findOne({ email })
         } catch (error) {
-            throw new Error("Failed to OTP")
+            throw error
         }
     }
     async updateUserVerified(email: string) {
@@ -55,7 +54,7 @@ export default class userRepository implements IuserRepository {
                 { new: true }
             )
         } catch (error) {
-            throw new Error("Failed to update user verified ");
+            throw error
         }
     }
     async googleUser(data: GoogleProfileResponse) {
@@ -76,8 +75,7 @@ export default class userRepository implements IuserRepository {
             }
             return user
         } catch (error) {
-            console.log(error)
-            throw new Error('Error finding user');
+            throw error
         }
     }
 }

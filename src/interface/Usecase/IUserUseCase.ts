@@ -1,5 +1,5 @@
 import Iuser from "../../entities/userEntity";
-import { IRegisterBody } from "../Controller/IUserController";
+import { IRegister, IRegisterBody } from "../Controller/IUserController";
 
 
 export interface registerRes {
@@ -46,7 +46,7 @@ export interface GoogleRes {
 }
 
 export interface IuserUseCase {
-    register(data: IRegisterBody): Promise<IRegisterBody>
+    register(data: IRegisterBody): Promise<IRegister>
     verifyOtp(email: string, otp: string): Promise<otpRes>
     resendOtp(email: string): Promise<string | null>
     login(data: loginBody): Promise<loginRes | null>

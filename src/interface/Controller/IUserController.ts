@@ -3,9 +3,15 @@ import { Request, Response } from "express";
 export interface IRegisterBody {
     name: string;
     email: string;
-    password: string
+    password?: string
     status?: boolean
     message?: string
+}
+export interface IRegister {
+    _id: string
+    name: string;
+    email: string;
+    image: string | undefined;
 }
 
 export interface IUserController{

@@ -30,7 +30,6 @@ const OwnerUseCase = new ownerUseCase(
     jwtService
 )
 const OwnerController = new ownerController(OwnerUseCase)
-
 const WorkspaceRepository = new workspaceRepository(workspaceModel)
 const WorkspaceUseCase = new workspaceUseCase(
     WorkspaceRepository,
@@ -46,7 +45,9 @@ ownerRouter.post('/', OwnerController.login)
 ownerRouter.post('/logout', OwnerController.logout)
 
 // workspace management 
-ownerRouter.use(ownerAuth)
-ownerRouter.post('/addWorkspace',  upload.array('images'), WorkspaceController.addWorkspace)
+
+ownerRouter.get('/listWorkspaces', ownerAuth,  WorkspaceController.listWorkspaces)
+ownerRouter.post('/addWorkspace', ownerAuth, upload.array('images'), WorkspaceController.addWorkspace)
+ownerRouter.get("/viewDetails", ownerAuth, WorkspaceController.workspaceDetails)
 
 export default ownerRouter

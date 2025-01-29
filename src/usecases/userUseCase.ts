@@ -1,12 +1,10 @@
 import { GoogleProfileResponse, IuserUseCase, loginBody, otpRes } from "../interface/Usecase/IUserUseCase";
 import { IuserRepository } from "../interface/Repository/userRepository"
-import { IRegisterBody } from "../interface/Controller/IUserController";
-import Iuser from "../entities/userEntity";
+import { IRegister, IRegisterBody } from "../interface/Controller/IUserController";
 import IhashingService from "../interface/Utils/hashingService"
 import IotpService from "../interface/Utils/otpService"
 import IjwtService from "../interface/Utils/jwtService"
 import axios from "axios";
-import { response } from "express";
 
 
 export default class userUseCase implements IuserUseCase {
@@ -27,21 +25,17 @@ export default class userUseCase implements IuserUseCase {
         this.otpService = otpService
         this.jwtService = jwtService
     }
-    async register(data: IRegisterBody): Promise<IRegisterBody> {
+    async register(data: IRegisterBody): Promise<IRegister> {
         try {
             const exist = await this.userRepository.checkEmailExists(data.email)
             if (exist) {
-                return {
-                    ...data,
-                    status: false,
-                    message: "This user already exist"
-                }
+                throw new Error("User already exist")
             }
             if (data.password) {
                 const hashedPass = await this.hashingService.hashing(data.password);
                 data.password = hashedPass;
             }
-            const createdUser: Iuser | null = await this.userRepository.createUser(data)
+            const createdUser = await this.userRepository.createUser(data)
             if (!createdUser) {
                 throw new Error("Failed to create user.");
             }
@@ -49,10 +43,16 @@ export default class userUseCase implements IuserUseCase {
             const otp = this.otpService.generateOtp();
             this.userRepository.saveOtp(data.email, otp)
             this.otpService.sendEmail(data.email, otp, data.name)
-            return createdUser as IRegisterBody
+            const user = {
+                name: createdUser.name,
+                email: createdUser.email,
+                _id: createdUser._id,
+                image: createdUser.image,
+            };
+            return user
 
         } catch (error) {
-            throw new Error("error")
+            throw error
         }
     }
 
@@ -96,27 +96,17 @@ export default class userUseCase implements IuserUseCase {
             const user = await this.userRepository.checkEmailExists(data.email)
             if (user) {
                 if (user.isBlocked) {
-                    return {
-                        status: false,
-                        message: "Your account is blocked. Please contact support."
-                    }
+                    throw new Error("Your account is blocked. Please contact support.")
                 }
                 if (!user.password) {
-                    return {
-                        status: false,
-                        message: "Try Google Authentication",
-                        user: user
-                    }
+                    throw new Error("Try Google Authentication")
                 }
                 const status = await this.hashingService.compare(
                     data.password,
                     user.password
                 )
                 if (!status) {
-                    return {
-                        status: false,
-                        message: "Incorrect Password"
-                    }
+                    throw new Error("Incorrect Password")
                 }
                 if (user.isVerified == false) {
                     const otp = this.otpService.generateOtp()
@@ -141,10 +131,7 @@ export default class userUseCase implements IuserUseCase {
             return { status: false, message: "Email Not found" };
 
         } catch (error) {
-            return {
-                status: false,
-                message: "",
-            };
+            throw error
         }
     }
 
@@ -175,14 +162,13 @@ export default class userUseCase implements IuserUseCase {
             }
             return { status: true, message: "Successfull", token, refreshToken, user: filteredData }
         } catch (error) {
-            console.log(error)
-            return null
+            throw error
         }
     }
     async validateForgotPassword(email: string): Promise<string | null> {
         try {
             const user = await this.userRepository.checkEmailExists(email)
-            if(!user){
+            if (!user) {
                 return "User not exist with this email"
             }
             let data = {
@@ -196,8 +182,7 @@ export default class userUseCase implements IuserUseCase {
             await this.otpService.sendEmailForgotPassword(resetLink, user.email)
             return "Email sended to the user";
         } catch (error) {
-            console.log(error)
-            return null
+            throw error
         }
     }
 }

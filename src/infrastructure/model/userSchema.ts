@@ -1,7 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import Iuser from "../../entities/userEntity";
 
-
 const userSchema = new Schema<Iuser>({
     name: {
         type: String,
@@ -33,7 +32,8 @@ const userSchema = new Schema<Iuser>({
         default: false,
         required: true
     }
-})
+},
+{timestamps: true})
 
 const userModel = mongoose.model<Iuser>('User', userSchema)
 export default userModel

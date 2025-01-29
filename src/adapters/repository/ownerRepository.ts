@@ -31,7 +31,6 @@ export default class ownerRepository implements IOwnerRepository {
             throw new Error("Failed to check email existence")
         }
     }
-    
     async checkOwnerExists(id: string) {
         try {
             return await this.owner.findById(id)

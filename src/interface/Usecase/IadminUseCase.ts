@@ -1,5 +1,6 @@
 import IOwner from "../../entities/ownerEntity"
 import Iuser from "../../entities/userEntity"
+import { IWorkspace } from "../../entities/workspaceEntity"
 
 export interface logAdmin {
     name: string
@@ -19,4 +20,6 @@ export interface IadminUseCase {
     blockUser(id: string): Promise<string | null>
     getOwners(search: string, page: number, limit: number): Promise<{ owners: IOwner[]; totalPages: number }>
     blockOwner(id: string): Promise<string | null>
+    getWorkspaces(): Promise<IWorkspace[]|null>
+    updateStatus(workspaceId: string, status: string): Promise<IWorkspace|undefined>
 }

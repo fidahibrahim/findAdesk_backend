@@ -25,14 +25,17 @@ const UserUseCase = new userUseCase(
 )
 const userController = new UserController(UserUseCase)
 
+// user authentication
 userRouter.post('/register', userController.register)
 userRouter.post('/verifyOtp', userController.verifyOtp)
 userRouter.post('/resendOtp', userController.resendOtp)
 userRouter.post('/login', userController.login)
-userRouter.post('/logout', userController.logout)
+userRouter.post('/logout', authenticateUser, userController.logout)
 userRouter.post('/googleLogin', userController.googleLogin)
-// userRouter.use(authenticateUser)
 userRouter.post('/forgotPassword', userController.forgotPassword)
+
+// userRouter.use(authenticateUser)
+
 
 
 export default userRouter

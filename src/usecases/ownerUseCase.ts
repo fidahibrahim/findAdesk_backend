@@ -85,10 +85,8 @@ export default class ownerUseCase implements IOwnerUseCase {
         }
     }
     async login(data: loginBody) {
-        console.log("daaaaaa",data)
         try {
             const ownerData = await this.ownerRepository.checkEmailExists(data.email)
-            console.log(ownerData,"ownerdaaaa")
             if (ownerData) {
                 if (!ownerData.password) {
                     return {

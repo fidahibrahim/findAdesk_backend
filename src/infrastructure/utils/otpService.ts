@@ -25,7 +25,7 @@ export default class OtpService implements IotpService {
                 theme: "default",
                 product: {
                     name: "findAdesk",
-                    link: "https://mailgen.js/"
+                    link: "http://localhost:5000/"
                 }
             })
 
@@ -74,7 +74,7 @@ export default class OtpService implements IotpService {
                 theme: "default",
                 product: {
                     name: "findAdesk",
-                    link: "https://mailgen.js/"
+                    link: "http://localhost:5000/"
                 }
             })
             const emailContent = {
@@ -106,4 +106,62 @@ export default class OtpService implements IotpService {
             throw error;
         }
     }
+    async sendEmailToOwner(email: string, status: string, name: string) {
+        try {
+            const transporter = nodemailer.createTransport({
+                service: "gmail",
+                host: "smtp.gmail.com",
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.NODE_MAILER_EMAIL,
+                    pass: process.env.NODE_MAILER_PASS,
+                },
+            });
+
+            const mailGenerator = new Mailgen({
+                theme: "default",
+                product: {
+                    name: "findAdesk",
+                    link: "http://localhost:5000/",
+                },
+            });
+
+            let intro = "";
+            let outro = "";
+
+            if (status === "Approved") {
+                intro = "We are thrilled to inform you that your workspace submission has been approved!";
+                outro = "You can now manage your workspace and start welcoming users. If you have any questions, feel free to contact us at support@findadesk.com.";
+            } else if (status === "Rejected") {
+                intro = "We regret to inform you that your workspace submission has been rejected.";
+                outro = "Please review the submission guidelines and make necessary adjustments. If you have any questions, feel free to contact us at support@findadesk.com.";
+            }
+
+            const emailContent = {
+                body: {
+                    name: `${name}`,
+                    intro: intro,
+                    outro: outro,
+                },
+            };
+
+            const html = mailGenerator.generate(emailContent);
+
+            const message = {
+                from: process.env.NODE_MAILER_EMAIL,
+                to: email,
+                subject: `findAdesk Workspace Submission ${status}`,
+                html: html,
+            };
+
+            await transporter.sendMail(message);
+
+        } catch (error) {
+            console.error("Error sending password reset email:", error);
+            throw error;
+        }
+    }
+
+
 }

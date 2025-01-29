@@ -23,6 +23,8 @@ const ownerSchema = new Schema<IOwner>({
         type: Boolean,
         default: false
     }
+},{
+    timestamps: true
 })
 
 const ownerModel = mongoose.model<IOwner>('Owner', ownerSchema)

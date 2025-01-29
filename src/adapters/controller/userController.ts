@@ -1,3 +1,6 @@
+import { HttpStatusCode } from "../../constants/httpStatusCode";
+import { ResponseMessage } from "../../constants/responseMssg";
+import { handleError, handleSuccess } from "../../infrastructure/utils/responseHandler";
 import { IuserUseCase } from "../../interface/Usecase/IUserUseCase";
 import { Request, Response } from "express"
 
@@ -19,10 +22,10 @@ export class UserController {
         try {
             const { username: name, email, password } = req.body
             if (!name || !email || !password) {
-                res.status(400).json({
-                    status: false,
-                    message: "All fields are required"
-                })
+                res
+                    .status(HttpStatusCode.BAD_REQUEST)
+                    .json(handleError(ResponseMessage.FIELDS_REQUIRED, HttpStatusCode.BAD_REQUEST))
+                return
             }
             const data = {
                 name,
@@ -30,21 +33,13 @@ export class UserController {
                 password
             }
             const response = await this.userUseCase.register(data)
-            if (!response?.status && response.message == "This user already exist") {
-                res.status(403).json({
-                    status: false,
-                    message: "user already exist with this email"
-                })
-                return;
-            }
-            res.status(200).json({
-                message: "User created and otp sended successfully",
-                email: response.email
-            });
+
+            res
+                .status(HttpStatusCode.CREATED)
+                .json(handleSuccess(ResponseMessage.USER_REGISTER_SUCCESS, HttpStatusCode.CREATED, response));
+
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-            const errorCode = (error as any).code || 500
-            res.status(errorCode).json(errorMessage)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(handleError(ResponseMessage.USER_REGISTER_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 
@@ -116,7 +111,8 @@ export class UserController {
                 res.status(403).json(response);
             }
         } catch (error) {
-            console.log(error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.LOGIN_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 
@@ -125,8 +121,8 @@ export class UserController {
             res.cookie("userToken", "", { httpOnly: true, expires: new Date() }).cookie("userRefreshToken", "", { httpOnly: true, expires: new Date() })
             res.status(200).json({ status: true })
         } catch (error) {
-            console.log(error);
-            res.json(error)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.LOGOUT_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 

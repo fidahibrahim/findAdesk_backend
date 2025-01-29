@@ -2,19 +2,23 @@ import { Model } from "mongoose";
 import IadminRepository from "../../interface/Repository/adminRepository";
 import Iuser from "../../entities/userEntity";
 import IOwner from "../../entities/ownerEntity";
+import { IWorkspace } from "../../entities/workspaceEntity";
 
 export default class adminRepository implements IadminRepository {
     private admin: Model<Iuser>
     private user: Model<Iuser>
     private owner: Model<IOwner>
+    private workspace: Model<IWorkspace>
     constructor(
         admin: Model<Iuser>,
         user: Model<Iuser>,
-        owner: Model<IOwner>
+        owner: Model<IOwner>,
+        workspace: Model<IWorkspace>,
     ) {
         this.admin = admin
         this.user = user
         this.owner = owner
+        this.workspace = workspace
     }
 
     async checkEmailExists(email: string) {
@@ -90,6 +94,40 @@ export default class adminRepository implements IadminRepository {
         } catch (error) {
             console.log(error);
             return null
+        }
+    }
+    async findWorkspace(workspaceId: string){
+        try {
+            const response = await this.workspace.findById( workspaceId )
+            console.log(response,"res from repo")
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async getWorkspaces() {
+        try {
+            const response = await this.workspace.find({})
+            console.log(response, "res from repo")
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async updateStatus(workspaceId: string, status: string) {
+        try {
+            const updatedWorkspace = await this.workspace.findByIdAndUpdate(
+                workspaceId,
+                { status },
+                { new: true }
+            )
+            if (!updatedWorkspace) {
+                throw new Error(`Workspace with ID ${workspaceId} not found`);
+            }
+            return updatedWorkspace;
+        } catch (error) {
+            console.log(error)
+            throw error
         }
     }
 }

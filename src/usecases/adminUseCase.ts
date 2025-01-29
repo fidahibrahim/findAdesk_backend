@@ -4,21 +4,25 @@ import IhashingService from "../interface/Utils/hashingService"
 import IjwtService from "../interface/Utils/jwtService"
 import Iuser from "../entities/userEntity";
 import IOwner from "../entities/ownerEntity";
+import IotpService from "../interface/Utils/otpService";
 
 
 export default class adminUseCase implements IadminUseCase {
     private adminRepository: IadminRepository
     private hashingService: IhashingService
     private jwtService: IjwtService
+    private otpService: IotpService
     constructor(
         adminRepository: IadminRepository,
         hashingService: IhashingService,
         jwtService: IjwtService,
+        otpService: IotpService,
 
     ) {
         this.adminRepository = adminRepository
         this.hashingService = hashingService
         this.jwtService = jwtService
+        this.otpService = otpService
     }
 
     async login(email: string, password: string): Promise<returnData | void> {
@@ -102,6 +106,28 @@ export default class adminUseCase implements IadminUseCase {
         } catch (error) {
             console.log(error);
             return null
+        }
+    }
+    async getWorkspaces(){
+        try {
+            const response = await this.adminRepository.getWorkspaces()
+            console.log(response,"res from usecase")
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async updateStatus(workspaceId: string, status: string){
+        try {
+            const existWorkspace = await this.adminRepository.findWorkspace(workspaceId)
+            let email = existWorkspace?.workspaceMail
+            const response = await this.adminRepository.updateStatus(workspaceId, status)
+            if(response) {
+                await this.otpService.sendEmailToOwner(email, response.status, response.workspaceName)
+                return response
+            }
+        } catch (error) {
+            
         }
     }
 }

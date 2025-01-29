@@ -8,7 +8,6 @@ interface AuthenticatedRequest extends Request {
 
 const authenticateUser = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     const token = req.cookies?.userToken;
-
     if (!token) {
         res.status(401).json({ message: 'Unauthorized' });
         return;
@@ -25,8 +24,8 @@ const authenticateUser = async (req: AuthenticatedRequest, res: Response, next: 
         const decoded = jwt.verify(token, secretKey);
         req.user = decoded;
 
-        if (typeof req.user === 'object' && req.user._id) {
-            const user = await userModel.findById(req.user._id);
+        if (typeof req.user === 'object' && req.user.userId) {
+            const user = await userModel.findById(req.user.userId);
             if (!user) {
                 res.status(404).json({ message: 'User not found.' });
                 return;

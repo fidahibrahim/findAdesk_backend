@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import { IAdminController } from "../../interface/Controller/IAdminController";
 import { IadminUseCase } from "../../interface/Usecase/IadminUseCase";
+import { HttpStatusCode } from "../../constants/httpStatusCode";
+import { handleError } from "../../infrastructure/utils/responseHandler";
+import { ResponseMessage } from "../../constants/responseMssg";
+import { stat } from "fs";
 
 
 export class adminController implements IAdminController {
@@ -13,6 +17,8 @@ export class adminController implements IAdminController {
         this.blockUser = this.blockUser.bind(this)
         this.getOwners = this.getOwners.bind(this)
         this.blockOwner = this.blockOwner.bind(this)
+        this.getWorkspaces = this.getWorkspaces.bind(this)
+        this.updateStatus = this.updateStatus.bind(this)
     }
 
     async login(req: Request, res: Response) {
@@ -41,10 +47,10 @@ export class adminController implements IAdminController {
     }
     async logout(req: Request, res: Response) {
         try {
-            console.log(req.cookies,"cookiee before")
+            console.log(req.cookies, "cookiee before")
             res.cookie("adminToken", "", { httpOnly: true, expires: new Date() })
             res.status(200).json({ status: true })
-            console.log(req.cookies,"cookiee after logout")
+            console.log(req.cookies, "cookiee after logout")
 
         } catch (error) {
             console.log(error)
@@ -90,6 +96,25 @@ export class adminController implements IAdminController {
             res.status(200).json(response)
         } catch (error) {
             console.log(error)
+
+        }
+    }
+    async getWorkspaces(req: Request, res: Response) {
+        try {
+            const response = await this.adminUsecase.getWorkspaces()
+            res.status(200).json(response)
+        } catch (error) {
+            console.log(error)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(handleError(ResponseMessage.FETCH_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+    async updateStatus(req: Request, res: Response) {
+        try {
+            const { workspaceId, status } = req.body
+            const response = await this.adminUsecase.updateStatus(workspaceId, status)
+            res.status(200).json(response)
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(handleError(ResponseMessage.UPDATE_WORKSPACE_STATUS_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 }
