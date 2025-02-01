@@ -57,17 +57,14 @@ export default class workspaceUseCase implements IWorkspaceUseCase {
             }
 
         } catch (error) {
-            console.error(error)
-            return {
-                status: false,
-                message: "An unexpected error occurred while adding the workspace",
-            };
+            throw error
         }
     }
-    async listWorkspaces(ownerId: string) {
+    async listWorkspaces(ownerId: string, search: string, page: number, limit: number) {
         try {
-            const response = await this.workspaceRepository.listWorkspaces(ownerId)
-            return response
+            const { workspaces, totalCount } = await this.workspaceRepository.listWorkspaces(ownerId, search, page, limit)
+            const totalPages = Math.ceil(totalCount / limit)
+            return { workspaces, totalPages }
         } catch (error) {
             throw error
         }
@@ -75,7 +72,7 @@ export default class workspaceUseCase implements IWorkspaceUseCase {
     async viewDetails(workspaceId: string) {
         try {
             const response = await this.workspaceRepository.viewDetails(workspaceId)
-            console.log(response,"from usecase")
+            console.log(response, "from usecase")
             return response
         } catch (error) {
             throw error

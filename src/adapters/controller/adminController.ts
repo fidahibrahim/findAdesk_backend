@@ -2,9 +2,8 @@ import { Request, Response } from "express";
 import { IAdminController } from "../../interface/Controller/IAdminController";
 import { IadminUseCase } from "../../interface/Usecase/IadminUseCase";
 import { HttpStatusCode } from "../../constants/httpStatusCode";
-import { handleError } from "../../infrastructure/utils/responseHandler";
+import { handleError, handleSuccess } from "../../infrastructure/utils/responseHandler";
 import { ResponseMessage } from "../../constants/responseMssg";
-import { stat } from "fs";
 
 
 export class adminController implements IAdminController {
@@ -34,7 +33,7 @@ export class adminController implements IAdminController {
             if (response?.message == "Logined successfully") {
                 res.cookie("adminToken", response.token, {
                     httpOnly: true,
-                    maxAge: 3600000,
+                    maxAge: 60 * 60 * 1000,
                 }).cookie("adminRefreshToken", response.adminRefreshToken, {
                     httpOnly: true,
                     maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -49,72 +48,92 @@ export class adminController implements IAdminController {
         try {
             console.log(req.cookies, "cookiee before")
             res.cookie("adminToken", "", { httpOnly: true, expires: new Date() })
-            res.status(200).json({ status: true })
-            console.log(req.cookies, "cookiee after logout")
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.LOGIN_SUCCESS, HttpStatusCode.OK, { status: true }))
 
         } catch (error) {
-            console.log(error)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.LOGOUT_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
+
     async getUsers(req: Request, res: Response) {
         try {
             const search = req.query.search?.toString() || ''
             const page = parseInt(req.query.page as string, 10) || 1
             const limit = 6
             const { users, totalPages } = await this.adminUsecase.getUsers(search, page, limit)
-            res.status(200).json({ users, totalPages });
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.FETCH_USERS_SUCCESS, HttpStatusCode.OK, { users, totalPages }))
+
         } catch (error) {
-            console.log(error);
-            res.status(500).json({ message: "An error occurred while fetching users" });
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.FETCH_USERS_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
+
     async blockUser(req: Request, res: Response) {
         try {
             const { userId } = req.body
             const response = await this.adminUsecase.blockUser(userId)
-            res.status(200).json(response);
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.USER_BLOCKED, HttpStatusCode.OK, { response }))
         } catch (error) {
-            console.log(error)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.USER_UNBLOCKED, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
+
     async getOwners(req: Request, res: Response): Promise<void> {
         try {
             const search = req.query.search?.toString() || ''
             const page = parseInt(req.query.page as string, 10) || 1
             const limit = 6
             const { owners, totalPages } = await this.adminUsecase.getOwners(search, page, limit)
-            res.status(200).json({ owners, totalPages });
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.FETCH_OWNERS_SUCCESS, HttpStatusCode.OK, { owners, totalPages }))
         } catch (error) {
-            console.log(error);
-            res.status(500).json({ message: "An error occurred while fetching users" });
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.FETCH_OWNERS_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
     async blockOwner(req: Request, res: Response): Promise<void> {
         try {
             const { ownerId } = req.body
             const response = await this.adminUsecase.blockOwner(ownerId)
-            res.status(200).json(response)
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.OWNER_BLOCKED, HttpStatusCode.OK, { response }))
         } catch (error) {
-            console.log(error)
-
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.OWNER_UNBLOCKED, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
+
     async getWorkspaces(req: Request, res: Response) {
         try {
-            const response = await this.adminUsecase.getWorkspaces()
-            res.status(200).json(response)
+            const search = req.query.search?.toString() || ''
+            const page = parseInt(req.query.page as string, 10) || 1
+            const status = req.query.filter?.toString() || 'all';
+            const limit = 6
+            const { workspaces, totalPages } = await this.adminUsecase.getWorkspaces(search, page, limit, status)
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.USER_BLOCKED, HttpStatusCode.OK, { workspaces, totalPages }))
         } catch (error) {
             console.log(error)
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(handleError(ResponseMessage.FETCH_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.FETCH_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
+
     async updateStatus(req: Request, res: Response) {
         try {
             const { workspaceId, status } = req.body
             const response = await this.adminUsecase.updateStatus(workspaceId, status)
-            res.status(200).json(response)
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.USER_BLOCKED, HttpStatusCode.OK, { response }))
         } catch (error) {
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(handleError(ResponseMessage.UPDATE_WORKSPACE_STATUS_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.UPDATE_WORKSPACE_STATUS_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 }

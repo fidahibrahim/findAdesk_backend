@@ -86,7 +86,7 @@ export class ownerController {
                 const { token, refreshToken } = response
                 res.cookie("ownerToken", token, {
                     httpOnly: true,
-                    maxAge: 360000,
+                    maxAge: 60 * 60 * 1000,
                 }).cookie("ownerRefreshToken", refreshToken, {
                     httpOnly: true,
                     maxAge: 30 * 24 * 60 * 60 * 1000

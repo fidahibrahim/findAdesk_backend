@@ -1,5 +1,6 @@
 import { HttpStatusCode } from "../../constants/httpStatusCode";
 import { ResponseMessage } from "../../constants/responseMssg";
+import { AuthenticatedRequest } from "../../infrastructure/middleware/userAuth";
 import { handleError, handleSuccess } from "../../infrastructure/utils/responseHandler";
 import { IuserUseCase } from "../../interface/Usecase/IUserUseCase";
 import { Request, Response } from "express"
@@ -16,6 +17,8 @@ export class UserController {
         this.login = this.login.bind(this)
         this.googleLogin = this.googleLogin.bind(this)
         this.forgotPassword = this.forgotPassword.bind(this)
+        this.getProfile = this.getProfile.bind(this)
+        this.contactService = this.contactService.bind(this)
     }
 
     async register(req: Request, res: Response): Promise<void> {
@@ -87,7 +90,7 @@ export class UserController {
                 const { token, refreshToken } = response
                 res.cookie("userToken", token, {
                     httpOnly: true,
-                    maxAge: 360000,
+                    maxAge: 60 * 60 * 1000,
                 }).cookie("userRefreshToken", refreshToken, {
                     httpOnly: true,
                     maxAge: 30 * 24 * 60 * 60 * 1000
@@ -119,7 +122,9 @@ export class UserController {
     async logout(req: Request, res: Response) {
         try {
             res.cookie("userToken", "", { httpOnly: true, expires: new Date() }).cookie("userRefreshToken", "", { httpOnly: true, expires: new Date() })
-            res.status(200).json({ status: true })
+            res
+                .status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.LOGOUT_SUCCESS, HttpStatusCode.OK, { status: true }));
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.LOGOUT_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
@@ -139,11 +144,13 @@ export class UserController {
                     httpOnly: true,
                     maxAge: 30 * 24 * 60 * 60 * 1000
                 })
-                res.status(200).json({ status: true, message: 'Successfull', user: response.user })
+                res
+                    .status(200).json({ status: true, message: 'Successfull', user: response.user })
             }
 
         } catch (error) {
-            console.log(error)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.GOOGLE_LOGIN_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 
@@ -152,16 +159,54 @@ export class UserController {
             const { email } = req.body
             const response = await this.userUseCase.validateForgotPassword(email)
             if (response == "Email sended to the user") {
-                res.status(200).json({ message: "email send succesfully" });
+                res.status(HttpStatusCode.OK)
+                    .json(handleSuccess(ResponseMessage.MAIL_SEND_SUCCESSFULLY, HttpStatusCode.OK))
                 return;
             } else if (response == "user not exist with this email") {
                 res
-                    .status(403)
-                    .json({ message: "User not exist with this email" });
+                    .status(HttpStatusCode.FORBIDDEN)
+                    .json(handleError(ResponseMessage.INVALID_MAIL, HttpStatusCode.FORBIDDEN));
                 return;
             }
         } catch (error) {
-            console.log(error)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.PASSWORD_RESET_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+    async changePassword(req: Request, res: Response) {
+        try {
+            const { token, password } = req.body
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.LOGOUT_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+    async contactService(req: Request, res: Response) {
+        try {
+            const { name, email, subject, message } = req.body
+            const response = await this.userUseCase.contactService(name, email, subject, message)
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.MAIL_SEND_SUCCESSFULLY, HttpStatusCode.OK, response))
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.FAILED_SENDING_MAIL, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+    async getProfile(req: AuthenticatedRequest, res: Response) {
+        try {
+            const userId = req.user?.userId
+            const response = await this.userUseCase.getProfile(userId)
+            if (response) {
+                res.status(HttpStatusCode.OK)
+                    .json(handleSuccess(ResponseMessage.FETCH_PROFILE, HttpStatusCode.OK, response))
+            } else {
+                res.status(HttpStatusCode.NOT_FOUND)
+                    .json(handleError(ResponseMessage.AUTHENTICATION_FAILURE, HttpStatusCode.NOT_FOUND));
+            }
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.FETCH_PROFILE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 }

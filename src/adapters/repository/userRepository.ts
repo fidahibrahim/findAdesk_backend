@@ -69,11 +69,18 @@ export default class userRepository implements IuserRepository {
                     isVerified: true
                 })
                 user = await newUser.save()
-                console.log("user neeew", user)
             } else {
                 user = existUser
             }
             return user
+        } catch (error) {
+            throw error
+        }
+    }
+    async getProfile(userId: string) {
+        try {
+            const response = await this.user.findById( userId )
+            return response
         } catch (error) {
             throw error
         }

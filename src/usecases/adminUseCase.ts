@@ -85,6 +85,7 @@ export default class adminUseCase implements IadminUseCase {
             return null
         }
     }
+
     async getOwners(search: string, page: number, limit: number): Promise<{ owners: IOwner[]; totalPages: number; }> {
         try {
             const { owners, totalCount } = await this.adminRepository.getAllOwners(search, page, limit)
@@ -95,6 +96,7 @@ export default class adminUseCase implements IadminUseCase {
             return { owners: [], totalPages: 0 }
         }
     }
+
     async blockOwner(ownerId: string): Promise<string | null> {
         try {
             const response = await this.adminRepository.blockOrUnBlockOwner(ownerId)
@@ -108,26 +110,28 @@ export default class adminUseCase implements IadminUseCase {
             return null
         }
     }
-    async getWorkspaces(){
+
+    async getWorkspaces(search: string, page: number, limit: number, status?: string) {
         try {
-            const response = await this.adminRepository.getWorkspaces()
-            console.log(response,"res from usecase")
-            return response
+            const { workspaces, totalCount } = await this.adminRepository.getWorkspaces(search, page, limit, status)
+            const totalPages = Math.ceil(totalCount / limit)
+            return { workspaces, totalPages }
         } catch (error) {
             throw error
         }
     }
-    async updateStatus(workspaceId: string, status: string){
+
+    async updateStatus(workspaceId: string, status: string) {
         try {
             const existWorkspace = await this.adminRepository.findWorkspace(workspaceId)
             let email = existWorkspace?.workspaceMail
             const response = await this.adminRepository.updateStatus(workspaceId, status)
-            if(response) {
+            if (response) {
                 await this.otpService.sendEmailToOwner(email, response.status, response.workspaceName)
                 return response
             }
         } catch (error) {
-            
+
         }
     }
 }

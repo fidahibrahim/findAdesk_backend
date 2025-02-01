@@ -42,19 +42,31 @@ export default class workspaceRepository implements IWorkspaceRepository {
             throw error
         }
     }
-    async listWorkspaces(ownerId: string): Promise<IWorkspace[]|null>
-    {
+    async listWorkspaces(ownerId: string, search: string, page: number, limit: number) {
         try {
-            const response = await this.workspace.find({ ownerId })  
-            return response
+            const filter = {
+                ownerId,
+                ...(search && {
+                    $or: [
+                        { workspaceName: { $regex: search, $options: "i" } },
+                        { workspaceMail: { $regex: search, $options: "i" } },
+                    ],
+                }),
+            };
+            const workspaces = await this.workspace
+                .find(filter)
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .sort({ _id: -1 });
+            const totalCount = await this.workspace.countDocuments(filter)
+            return { workspaces, totalCount }
         } catch (error) {
             throw error
         }
     }
-    async viewDetails(workspaceId: string){
+    async viewDetails(workspaceId: string) {
         try {
-            const response = await this.workspace.findById( workspaceId )
-            console.log(response,"res from repo")
+            const response = await this.workspace.findById(workspaceId)
             return response
         } catch (error) {
             throw error

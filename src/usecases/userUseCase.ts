@@ -147,7 +147,6 @@ export default class userUseCase implements IuserUseCase {
                 }
             )
             const googleUser = await this.userRepository.googleUser(response.data)
-            console.log(googleUser, "goooogle user in usecase")
             const payload = {
                 userId: googleUser._id,
                 name: googleUser.name,
@@ -181,6 +180,24 @@ export default class userUseCase implements IuserUseCase {
             const resetLink = `http://localhost:5000/resetPassword/${token}`
             await this.otpService.sendEmailForgotPassword(resetLink, user.email)
             return "Email sended to the user";
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async contactService (name: string, email: string, subject: string, message: string) {
+        try {
+            await this.otpService.contactEmailService(name, email, subject, message)
+            return "Email sent successfully!"
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async getProfile (userId: string) {
+        try {
+            const response = await this.userRepository.getProfile(userId)
+            return response
         } catch (error) {
             throw error
         }

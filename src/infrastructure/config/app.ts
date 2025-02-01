@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv"
 import cookieParser from "cookie-parser"
+import morgan from "morgan"
 import cors from "cors"
 import userRouter from '../routes/userRoutes'
 import adminRouter from '../routes/adminRoutes'
@@ -21,6 +22,8 @@ app.use(
         credentials: true
     })
 );
+
+app.use(morgan("dev"))
 
 //Routes 
 app.use('/api', userRouter)

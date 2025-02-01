@@ -16,4 +16,5 @@ export interface IuserRepository{
     verifyOtp(email: string): Promise<IotpData|null>
     updateUserVerified(email: string): Promise<IUser|null>
     googleUser(data: GoogleProfileResponse): Promise<any>
+    getProfile(userId: string|undefined): Promise<IUser|null>
 }

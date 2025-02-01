@@ -21,4 +21,7 @@ export interface IUserController{
     resendOtp(req: Request, res: Response): Promise<void>
     googleLogin(req: Request, res: Response): Promise<void>
     forgotPassword(req: Request, res: Response): void
+    changePassword(req: Request, res: Response): Promise<void>
+    contactService(req: Request, res: Response): Promise<void>
+    getProfile(req: Request, res: Response): Promise<void>
 }

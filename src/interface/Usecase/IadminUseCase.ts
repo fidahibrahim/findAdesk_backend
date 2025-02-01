@@ -20,6 +20,6 @@ export interface IadminUseCase {
     blockUser(id: string): Promise<string | null>
     getOwners(search: string, page: number, limit: number): Promise<{ owners: IOwner[]; totalPages: number }>
     blockOwner(id: string): Promise<string | null>
-    getWorkspaces(): Promise<IWorkspace[]|null>
-    updateStatus(workspaceId: string, status: string): Promise<IWorkspace|undefined>
+    getWorkspaces(search: string, page: number, limit: number, status?:string): Promise<{ workspaces: IWorkspace[] | null; totalPages: number }>
+    updateStatus(workspaceId: string, status: string): Promise<IWorkspace | undefined>
 }

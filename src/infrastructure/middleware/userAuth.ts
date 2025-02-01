@@ -2,8 +2,11 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import userModel from '../model/userSchema';
 
-interface AuthenticatedRequest extends Request {
-    user?: JwtPayload | string;
+interface UserPayload extends JwtPayload {
+    userId: string;
+}
+export interface AuthenticatedRequest extends Request {
+    user?: UserPayload;
 }
 
 const authenticateUser = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
@@ -21,7 +24,7 @@ const authenticateUser = async (req: AuthenticatedRequest, res: Response, next: 
     }
 
     try {
-        const decoded = jwt.verify(token, secretKey);
+        const decoded = jwt.verify(token, secretKey) as UserPayload;
         req.user = decoded;
 
         if (typeof req.user === 'object' && req.user.userId) {

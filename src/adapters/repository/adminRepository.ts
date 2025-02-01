@@ -25,7 +25,6 @@ export default class adminRepository implements IadminRepository {
         try {
             return await this.admin.findOne({ email, isAdmin: true })
         } catch (error) {
-            console.log(error);
             return null
         }
     }
@@ -42,8 +41,7 @@ export default class adminRepository implements IadminRepository {
             const totalCount = await this.user.countDocuments(filter);
             return { users, totalCount };
         } catch (error) {
-            console.log(error);
-            throw new Error("Error fetching users from database");
+            throw error
         }
     }
     async blockOrUnBlockUser(userId: string): Promise<Iuser | null> {
@@ -55,7 +53,6 @@ export default class adminRepository implements IadminRepository {
                 { new: true }
             )
         } catch (error) {
-            console.log(error)
             return null
         }
     }
@@ -72,7 +69,6 @@ export default class adminRepository implements IadminRepository {
             const totalCount = await this.owner.countDocuments(filter)
             return { owners, totalCount }
         } catch (error) {
-            console.log(error)
             throw new Error("Error fetching owners from database")
         }
     }
@@ -92,28 +88,44 @@ export default class adminRepository implements IadminRepository {
                 { new: true }
             )
         } catch (error) {
-            console.log(error);
             return null
         }
     }
-    async findWorkspace(workspaceId: string){
+    async findWorkspace(workspaceId: string) {
         try {
-            const response = await this.workspace.findById( workspaceId )
-            console.log(response,"res from repo")
-            return response
-        } catch (error) {
-            throw error
-        }
-    }
-    async getWorkspaces() {
-        try {
-            const response = await this.workspace.find({})
+            const response = await this.workspace.findById(workspaceId)
             console.log(response, "res from repo")
             return response
         } catch (error) {
             throw error
         }
     }
+
+    async getWorkspaces(search: string, page: number, limit: number, status?: string) {
+        try {
+            let filter: any = {}
+            console.log("Received Params =>", { search, status, page, limit });
+            if (search) {
+                filter.$or = [
+                    { workspaceName: { $regex: search, $options: "i" } },
+                    { workspaceMail: { $regex: search, $options: "i" } }
+                ];
+            }
+            if (status && status !== 'all') {
+                filter.status = { $regex: new RegExp(`^${status}$`, 'i') }
+            }
+            const workspaces = await this.workspace
+                .find(filter)
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .sort({ _id: -1 });
+            const totalCount = await this.workspace.countDocuments(filter)
+            return { workspaces, totalCount }
+        } catch (error) {
+            throw error
+        }
+    }
+
     async updateStatus(workspaceId: string, status: string) {
         try {
             const updatedWorkspace = await this.workspace.findByIdAndUpdate(
@@ -126,7 +138,6 @@ export default class adminRepository implements IadminRepository {
             }
             return updatedWorkspace;
         } catch (error) {
-            console.log(error)
             throw error
         }
     }

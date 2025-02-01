@@ -163,5 +163,29 @@ export default class OtpService implements IotpService {
         }
     }
 
+    async contactEmailService(name: string, email: string, subject: string, message: string) {
+        try {
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.NODE_MAILER_EMAIL,
+                    pass: process.env.NODE_MAILER_PASS,
+                },
+            });
+
+            const mailOptions = {
+                from: email,
+                to: process.env.NODE_MAILER_EMAIL,
+                subject: `New Contact Form Submission: ${subject}`,
+                text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
+            }; 
+            await transporter.sendMail(mailOptions)
+
+        } catch (error) {
+            console.error("Error sending email:", error);
+            throw error;
+        }
+    }
+
 
 }

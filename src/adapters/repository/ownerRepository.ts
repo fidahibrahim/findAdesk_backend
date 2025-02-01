@@ -19,7 +19,6 @@ export default class ownerRepository implements IOwnerRepository {
             const owner = new this.owner(data)
             return await owner.save()
         } catch (error) {
-            console.log(error)
             throw new Error("Failed to create new Owner")
         }
     }
@@ -35,7 +34,6 @@ export default class ownerRepository implements IOwnerRepository {
         try {
             return await this.owner.findById(id)
         } catch (error) {
-            console.log(error)
             throw new Error("Failed to check email existence")
         }
     }
