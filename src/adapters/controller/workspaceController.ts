@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import { AuthenticatedRequest } from "../../infrastructure/middleware/ownerAuth";
 import IWorkspaceUseCase from "../../interface/Usecase/IWorkspaceUseCase";
 import { HttpStatusCode } from "../../constants/httpStatusCode";
@@ -13,6 +13,8 @@ export class workspaceController {
         this.addWorkspace = this.addWorkspace.bind(this)
         this.listWorkspaces = this.listWorkspaces.bind(this)
         this.workspaceDetails = this.workspaceDetails.bind(this)
+        this.deleteWorkspace = this.deleteWorkspace.bind(this)
+        this.editWorkspace = this.editWorkspace.bind(this)
     }
 
     async addWorkspace(req: AuthenticatedRequest, res: Response) {
@@ -23,7 +25,6 @@ export class workspaceController {
                 ownerId: req.owner?.userId
             }
             const response = await this.workspaceUseCase.addWorkspace(formData)
-            console.log(response)
             if (!response.status) {
                 if (response.message === "Workspace already exists with this email") {
                     // res.status(403).json({
@@ -76,16 +77,55 @@ export class workspaceController {
         try {
             const workspaceId = req.query.workspaceId as string
             const response = await this.workspaceUseCase.viewDetails(workspaceId)
-            console.log(response, "res from contro")
             if (response) {
-                res.status(200).json(response);
+                res.status(HttpStatusCode.OK).json(handleSuccess(ResponseMessage.WORKSPACE_VIEW_SUCCESS, HttpStatusCode.OK, response));
             } else {
-                res.status(404).json({ message: "Workspace not found" });
+                res.status(HttpStatusCode.NOT_FOUND).json(handleError(ResponseMessage.WORKSPACE_NOT_FOUND, HttpStatusCode.NOT_FOUND));
             }
         } catch (error) {
             console.log(error)
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-                .json(handleError(ResponseMessage.WORKSPACE_LISTING_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+                .json(handleError(ResponseMessage.WORKSPACE_VIEW_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+    async deleteWorkspace(req: Request, res: Response) {
+        try {
+            const workspaceId = req.query.workspaceId as string
+            const response = await this.workspaceUseCase.deleteWorkspace(workspaceId)
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.DELETE_WORKSPACE_SUCCESS, HttpStatusCode.OK, response))
+        } catch (error) {
+            console.log(error)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.DELETE_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+    async editWorkspace(req: Request, res: Response) {
+        try {
+            const workspaceId = req.query.workspaceId as string
+            const existingImages = req.body.existingImages ? JSON.parse(req.body.existingImages) : [];
+            const formData = {
+                ...req.body,
+                images: req.files,
+                existingImages
+            }
+            delete formData.existingImages;
+            const updatedWorkspace = await this.workspaceUseCase.editWorkspace(workspaceId, formData)
+            console.log(updatedWorkspace, "workspace updated in contro")
+            if (updatedWorkspace) {
+                res.status(200).json({
+                    success: true,
+                    message: "Workspace updated successfully",
+                });
+            }
+            // return res.status(HttpStatusCode.OK)
+            //     .json(handleSuccess(ResponseMessage.EDIT_WORKSPACE_SUCCESS, HttpStatusCode.OK, {data: updatedWorkspace}))
+        } catch (error) {
+            console.log(error)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.EDIT_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 }

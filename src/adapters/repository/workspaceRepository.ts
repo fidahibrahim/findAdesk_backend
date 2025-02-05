@@ -1,4 +1,4 @@
-import mongoose, { Model } from "mongoose";
+import  { Model } from "mongoose";
 import { IWorkspaceRepository } from "../../interface/Repository/workspaceRepository";
 import { IWorkspace } from "../../entities/workspaceEntity";
 
@@ -69,6 +69,42 @@ export default class workspaceRepository implements IWorkspaceRepository {
             const response = await this.workspace.findById(workspaceId)
             return response
         } catch (error) {
+            throw error
+        }
+    }
+    async deleteWorkspace(workspaceId: string) {
+        try {
+            const response = await this.workspace.findByIdAndDelete(workspaceId)
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async editWorkspace(workspaceId: string, data: IWorkspace) {
+        try {
+            const workspace = await this.workspace.findById(workspaceId)
+            if (!workspace) {
+                throw new Error('Workspace not found');
+            }
+            const workspaceData = {
+                ...data,
+                startTime: new Date(`2024-02-05T${data.startTime}`),
+                endTime: new Date(`2024-02-05T${data.endTime}`)
+            };
+            const updatedWorkspace = await this.workspace.findByIdAndUpdate(
+                workspaceId,
+                { $set: workspaceData },
+                {
+                    new: true,
+                    runValidators: true
+                }
+            )
+            if (!updatedWorkspace) {
+                throw new Error('Failed to update workspace');
+            }    
+            return updatedWorkspace
+        } catch (error) {
+            console.log(error)
             throw error
         }
     }

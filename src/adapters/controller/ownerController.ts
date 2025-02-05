@@ -1,5 +1,8 @@
 import IOwnerUseCase from "../../interface/Usecase/IOwnerUseCase";
 import { Request, Response } from "express";
+import { handleError, handleSuccess } from "../../infrastructure/utils/responseHandler";
+import { ResponseMessage } from "../../constants/responseMssg";
+import { HttpStatusCode } from "../../constants/httpStatusCode";
 
 export class ownerController {
     private ownerUseCase: IOwnerUseCase
@@ -39,9 +42,8 @@ export class ownerController {
                 email: response.email
             });
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-            const errorCode = (error as any).code || 500
-            res.status(errorCode).json(errorMessage)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.OWNER_REGISTER_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
     async verifyOtp(req: Request, res: Response) {
@@ -58,7 +60,8 @@ export class ownerController {
             }
             res.status(200).json(response)
         } catch (error) {
-            res.json(error)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.OTP_VERIFICATION_FAILED, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
     async resendOtp(req: Request, res: Response) {
@@ -71,7 +74,8 @@ export class ownerController {
                 res.status(400).json({ message: "Invalid email" })
             }
         } catch (error) {
-            res.json(error)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.OTP_VERIFICATION_FAILED, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
     async login(req: Request, res: Response) {
@@ -105,16 +109,19 @@ export class ownerController {
                 res.status(403).json(response);
             }
         } catch (error) {
-            res.json(error)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.LOGIN_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
     async logout(req: Request, res: Response) {
         try {
             res.cookie("ownerToken", "", { httpOnly: true, expires: new Date() })
-            res.status(200).json({ status: true })
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.LOGOUT_SUCCESS, HttpStatusCode.OK))
         } catch (error) {
-            console.log(error)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.LOGOUT_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-    
+
 }

@@ -57,7 +57,12 @@ export enum ResponseMessage {
     WORKSPACE_NOT_FOUND = "Workspace not found",
     WORKSPACE_LISTING_SUCCESS = "Workspaces fetched successfully!",
     WORKSPACE_LISTING_FAILURE = "Failed to fetch Worksaces",
+    WORKSPACE_VIEW_SUCCESS = "Workspace details fetched successfully!",
+    WORKSPACE_VIEW_FAILURE = "Failed to fetch Worksace details",
+    DELETE_WORKSPACE_SUCCESS = "Workspace deleted successfully",
+    DELETE_WORKSPACE_FAILURE = "Failed to delete workspace",
+    EDIT_WORKSPACE_SUCCESS = "Workspace updated successfully",
+    EDIT_WORKSPACE_FAILURE = "Failed to update workspace",
 
-    
   }
   

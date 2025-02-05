@@ -19,4 +19,5 @@ export interface IWorkspace {
     amenities: string[];
     images: string[];
     status?: "pending" | "approved" | "rejected";
+    existingImages?: string[];
 }

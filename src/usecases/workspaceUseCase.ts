@@ -30,9 +30,9 @@ export default class workspaceUseCase implements IWorkspaceUseCase {
             const imageUrls = await Promise.all(
                 data.images.map(async (file: any) => {
                     try {
-                        // const sharpedImage = await sharpImage(2000, 2000, file.buffer);
+                        const sharpedImage = await sharpImage(2000, 2000, file.buffer);
                         const imageName = randomImageName();
-                        await sendObjectToS3(imageName, file.mimetype, file.buffer);
+                        await sendObjectToS3(imageName, file.mimetype, file.buffer, sharpedImage);
 
                         return createImageUrl(imageName);
                     } catch (error) {
@@ -72,8 +72,58 @@ export default class workspaceUseCase implements IWorkspaceUseCase {
     async viewDetails(workspaceId: string) {
         try {
             const response = await this.workspaceRepository.viewDetails(workspaceId)
-            console.log(response, "from usecase")
             return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async deleteWorkspace(workspaceId: string) {
+        try {
+            const response = await this.workspaceRepository.deleteWorkspace(workspaceId)
+            if (response) {
+                return "deleted successfully";
+            } else {
+                return "failed to delete";
+            }
+        } catch (error) {
+            throw error
+        }
+    }
+    async editWorkspace(workspaceId: string, data: IWorkspace) {
+        try {
+            const newImageUrls = data.images ? await Promise.all(
+                data.images.map(async (file: any) => {
+                    try {
+                        const sharpedImage = await sharpImage(2000, 2000, file.buffer);
+                        const imageName = randomImageName();
+                        await sendObjectToS3(imageName, file.mimetype, file.buffer, sharpedImage);
+                        return createImageUrl(imageName);
+                    } catch (error) {
+                        console.error("Error processing image:", error);
+                        return null;
+                    }
+                })
+            ) : [];
+            const validNewImageUrls = newImageUrls.filter(
+                (url): url is string => url !== null
+            );
+            const allImages = [...(data.existingImages || []), ...validNewImageUrls];
+            const workspaceData = {
+                ...data,
+                images: allImages
+            };
+
+            const response = await this.workspaceRepository.editWorkspace(workspaceId, workspaceData)
+            console.log(response,"res")
+            if (response) {
+                return {
+                    status: true,
+                    message: "Successfully added your workspace",
+                    data: workspaceData
+                };
+            } else {
+                throw new Error("Something went wrong while adding the workspace")
+            }
         } catch (error) {
             throw error
         }

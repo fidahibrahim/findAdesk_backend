@@ -66,7 +66,7 @@ const workspaceSchema = new Schema ({
     images: [{ type: String }],
     status: {
         type: String,
-        enum: ["pending", "approved", "rejected"],
+        enum: ["pending", "Approved", "Rejected"],
         default: "pending"
     }
 },{

@@ -49,5 +49,7 @@ ownerRouter.post('/logout', OwnerController.logout)
 ownerRouter.get('/listWorkspaces', ownerAuth,  WorkspaceController.listWorkspaces)
 ownerRouter.post('/addWorkspace', ownerAuth, upload.array('images'), WorkspaceController.addWorkspace)
 ownerRouter.get("/viewDetails", ownerAuth, WorkspaceController.workspaceDetails)
+ownerRouter.delete('/deleteWorkspace', ownerAuth, WorkspaceController.deleteWorkspace)
+ownerRouter.put('/editWorkspace', ownerAuth, upload.array('images'), WorkspaceController.editWorkspace)
 
 export default ownerRouter

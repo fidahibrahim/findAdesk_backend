@@ -17,7 +17,7 @@ const s3 = new S3Client({
   region:bucketRegion,
 })
 
-export async function sendObjectToS3(name:string,type:string,buffer:Buffer){  
+export async function sendObjectToS3(name:string,type:string,buffer:Buffer,sharpedImage: Buffer<ArrayBufferLike>){  
   const params = {
     Bucket : bucketName,
     Key : name,
