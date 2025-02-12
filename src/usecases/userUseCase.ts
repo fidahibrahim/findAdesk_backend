@@ -1,11 +1,11 @@
-import { GoogleProfileResponse, IuserUseCase, loginBody, otpRes } from "../interface/Usecase/IUserUseCase";
+import { GoogleProfileResponse, Ifilter, IuserUseCase, loginBody, otpRes } from "../interface/Usecase/IUserUseCase";
 import { IuserRepository } from "../interface/Repository/userRepository"
 import { IRegister, IRegisterBody } from "../interface/Controller/IUserController";
 import IhashingService from "../interface/Utils/hashingService"
 import IotpService from "../interface/Utils/otpService"
 import IjwtService from "../interface/Utils/jwtService"
 import axios from "axios";
-
+import { IWorkspace } from "../entities/workspaceEntity";
 
 export default class userUseCase implements IuserUseCase {
     private userRepository: IuserRepository;
@@ -55,7 +55,6 @@ export default class userUseCase implements IuserUseCase {
             throw error
         }
     }
-
     async verifyOtp(email: string, otp: string): Promise<otpRes> {
         try {
             const data = await this.userRepository.verifyOtp(email)
@@ -74,7 +73,6 @@ export default class userUseCase implements IuserUseCase {
             throw Error()
         }
     }
-
     async resendOtp(email: string) {
         try {
             const user = await this.userRepository.checkEmailExists(email)
@@ -90,7 +88,6 @@ export default class userUseCase implements IuserUseCase {
             return null
         }
     }
-
     async login(data: loginBody) {
         try {
             const user = await this.userRepository.checkEmailExists(data.email)
@@ -134,7 +131,6 @@ export default class userUseCase implements IuserUseCase {
             throw error
         }
     }
-
     async fetchGoogleUserDetails(access_token: string) {
         try {
             const response = await axios.get<GoogleProfileResponse>(
@@ -184,8 +180,7 @@ export default class userUseCase implements IuserUseCase {
             throw error
         }
     }
-
-    async contactService (name: string, email: string, subject: string, message: string) {
+    async contactService(name: string, email: string, subject: string, message: string) {
         try {
             await this.otpService.contactEmailService(name, email, subject, message)
             return "Email sent successfully!"
@@ -193,10 +188,32 @@ export default class userUseCase implements IuserUseCase {
             throw error
         }
     }
-
-    async getProfile (userId: string) {
+    async getProfile(userId: string) {
         try {
             const response = await this.userRepository.getProfile(userId)
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async getRecentWorkspaces() {
+        try {
+            return await this.userRepository.getRecentWorkspaces()
+        } catch (error) {
+            throw error
+        }
+    }
+    async searchWorkspaces(filters: Ifilter) {
+        try {
+            return await this.userRepository.findWorkspaces(filters)
+        } catch (error) {
+            throw error
+        }
+    }
+    async workspaceDetails(workspaceId: string) {
+        try {
+            const response = await this.userRepository.workspaceDetails(workspaceId)
+            console.log(response, "response in usecase")
             return response
         } catch (error) {
             throw error

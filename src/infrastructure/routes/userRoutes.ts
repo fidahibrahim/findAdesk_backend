@@ -8,6 +8,7 @@ import OtpSchema from "../model/otpSchema"
 import OtpService from "../utils/otpService"
 import JwtToken from "../utils/jwtService"
 import authenticateUser from '../middleware/userAuth'
+import workspaceModel from '../model/workspaceSchema'
 
 const userRouter: Router = express.Router()
 
@@ -15,7 +16,7 @@ const hashingService = new HashingService()
 const otpService = new OtpService()
 const jwtService = new JwtToken()
 
-const UserRepository = new userRepository(users, OtpSchema)
+const UserRepository = new userRepository(users, OtpSchema, workspaceModel)
 
 const UserUseCase = new userUseCase(
     UserRepository,
@@ -37,5 +38,9 @@ userRouter.post('/changePassword', userController.changePassword)
 userRouter.post('/contactUs', userController.contactService)
 
 userRouter.get('/getProfile', authenticateUser, userController.getProfile)
+
+userRouter.get('/recents', userController.getRecentWorkspaces)
+userRouter.post('/searchWorkspaces', userController.filterWorkspaces)
+userRouter.get('/workspaceDetails', userController.workspaceDetails)
 
 export default userRouter

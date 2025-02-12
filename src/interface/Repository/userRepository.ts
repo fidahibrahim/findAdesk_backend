@@ -1,6 +1,7 @@
 import { IRegisterBody } from "../Controller/IUserController";
 import IUser from '../../entities/userEntity'
-import { GoogleProfileResponse } from "../Usecase/IUserUseCase";
+import { GoogleProfileResponse, Ifilter } from "../Usecase/IUserUseCase";
+import { IWorkspace } from "../../entities/workspaceEntity";
 
 export interface IotpData {
     _id: string
@@ -9,12 +10,15 @@ export interface IotpData {
     createdAt: Date
 }
 
-export interface IuserRepository{
-    checkEmailExists(email: string): Promise<IUser|null>
-    createUser(data: IRegisterBody): Promise<IUser|null>
+export interface IuserRepository {
+    checkEmailExists(email: string): Promise<IUser | null>
+    createUser(data: IRegisterBody): Promise<IUser | null>
     saveOtp(email: string, otp: string): void
-    verifyOtp(email: string): Promise<IotpData|null>
-    updateUserVerified(email: string): Promise<IUser|null>
+    verifyOtp(email: string): Promise<IotpData | null>
+    updateUserVerified(email: string): Promise<IUser | null>
     googleUser(data: GoogleProfileResponse): Promise<any>
-    getProfile(userId: string|undefined): Promise<IUser|null>
+    getProfile(userId: string | undefined): Promise<IUser | null>
+    getRecentWorkspaces(): Promise<IWorkspace[] | null>
+    findWorkspaces(filters: Ifilter): Promise<IWorkspace[] | null>
+    workspaceDetails(workspaceId: string): Promise<IWorkspace | null>
 }

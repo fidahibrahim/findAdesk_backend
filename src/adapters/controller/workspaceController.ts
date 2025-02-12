@@ -25,13 +25,9 @@ export class workspaceController {
                 ownerId: req.owner?.userId
             }
             const response = await this.workspaceUseCase.addWorkspace(formData)
+
             if (!response.status) {
                 if (response.message === "Workspace already exists with this email") {
-                    // res.status(403).json({
-                    //     status: false,
-                    //     message: response.message,
-                    // });
-                    // return
                     res.status(HttpStatusCode.FORBIDDEN)
                         .json(handleError(ResponseMessage.WORKSPACE_EXIST, HttpStatusCode.FORBIDDEN))
                     return
@@ -77,6 +73,7 @@ export class workspaceController {
         try {
             const workspaceId = req.query.workspaceId as string
             const response = await this.workspaceUseCase.viewDetails(workspaceId)
+            console.log(response, "response in controller")
             if (response) {
                 res.status(HttpStatusCode.OK).json(handleSuccess(ResponseMessage.WORKSPACE_VIEW_SUCCESS, HttpStatusCode.OK, response));
             } else {
@@ -105,23 +102,21 @@ export class workspaceController {
     async editWorkspace(req: Request, res: Response) {
         try {
             const workspaceId = req.query.workspaceId as string
-            const existingImages = req.body.existingImages ? JSON.parse(req.body.existingImages) : [];
+            const existingImages = JSON.parse(req.body.existingImages || '[]');
             const formData = {
                 ...req.body,
-                images: req.files,
-                existingImages
+                existingImages,
+                newImages: req.files,
             }
-            delete formData.existingImages;
+            console.log(formData,"formdata in cotroller")
             const updatedWorkspace = await this.workspaceUseCase.editWorkspace(workspaceId, formData)
-            console.log(updatedWorkspace, "workspace updated in contro")
+            console.log(updatedWorkspace, "workspace updated in controller")
             if (updatedWorkspace) {
                 res.status(200).json({
                     success: true,
                     message: "Workspace updated successfully",
                 });
             }
-            // return res.status(HttpStatusCode.OK)
-            //     .json(handleSuccess(ResponseMessage.EDIT_WORKSPACE_SUCCESS, HttpStatusCode.OK, {data: updatedWorkspace}))
         } catch (error) {
             console.log(error)
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)

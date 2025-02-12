@@ -1,4 +1,5 @@
 import Iuser from "../../entities/userEntity";
+import { IWorkspace } from "../../entities/workspaceEntity";
 import { IRegister, IRegisterBody } from "../Controller/IUserController";
 
 
@@ -22,7 +23,6 @@ export interface loginBody {
     email: string
     password: string
 }
-
 export interface loginRes {
     status: boolean
     message: string
@@ -30,7 +30,6 @@ export interface loginRes {
     refreshToken?: string
     user?: logUser
 }
-
 export interface GoogleProfileResponse {
     id: string;
     email: string;
@@ -40,9 +39,16 @@ export interface GoogleProfileResponse {
     family_name: string;
     picture: string;
 }
-
 export interface GoogleRes {
     status: boolean,
+}
+
+export interface Ifilter {
+    type?: string;
+    location?: string;
+    date?: string;
+    amenities?: string;
+    sortBy?: 'recommended' | 'price-low' | 'price-high';
 }
 
 export interface IuserUseCase {
@@ -54,6 +60,9 @@ export interface IuserUseCase {
     validateForgotPassword(email: string): Promise<string | null>
     contactService(name: string, email: string, subject: string, message: string): Promise<string>
     getProfile(userId: string|undefined): Promise<Iuser|null>
+    getRecentWorkspaces(): Promise<IWorkspace[]|null>
+    searchWorkspaces(filters: Ifilter): Promise<IWorkspace[]|null>
+    workspaceDetails(workspaceId: string): Promise<IWorkspace|null>
 }
 
 

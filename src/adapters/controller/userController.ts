@@ -1,3 +1,4 @@
+import { responseEncoding } from "axios";
 import { HttpStatusCode } from "../../constants/httpStatusCode";
 import { ResponseMessage } from "../../constants/responseMssg";
 import { AuthenticatedRequest } from "../../infrastructure/middleware/userAuth";
@@ -19,6 +20,9 @@ export class UserController {
         this.forgotPassword = this.forgotPassword.bind(this)
         this.getProfile = this.getProfile.bind(this)
         this.contactService = this.contactService.bind(this)
+        this.getRecentWorkspaces = this.getRecentWorkspaces.bind(this)
+        this.filterWorkspaces = this.filterWorkspaces.bind(this)
+        this.workspaceDetails = this.workspaceDetails.bind(this)
     }
 
     async register(req: Request, res: Response): Promise<void> {
@@ -209,4 +213,44 @@ export class UserController {
                 .json(handleError(ResponseMessage.FETCH_PROFILE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
+    async getRecentWorkspaces(req: Request, res: Response) {
+        try {
+            const response = await this.userUseCase.getRecentWorkspaces()
+            console.log(response)
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.FETCH_WORKSPACE_SUCCESS, HttpStatusCode.OK, response))
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.FETCH_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+    async filterWorkspaces(req: Request, res: Response) {
+        try {
+            const filters = req.body
+            const workspaces = await this.userUseCase.searchWorkspaces(filters)
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.FETCH_WORKSPACE_SUCCESS, HttpStatusCode.OK, workspaces))
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.FETCH_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+    async workspaceDetails(req: Request, res: Response) {
+        try {
+            const workspaceId = req.query.workspaceId as string
+            const response = await this.userUseCase.workspaceDetails(workspaceId)
+            console.log(response, "response in controller")
+            if (response) {
+                res.status(HttpStatusCode.OK)
+                    .json(handleSuccess(ResponseMessage.WORKSPACE_VIEW_SUCCESS, HttpStatusCode.OK, response));
+            } else {
+                res.status(HttpStatusCode.NOT_FOUND)
+                    .json(handleError(ResponseMessage.WORKSPACE_NOT_FOUND, HttpStatusCode.NOT_FOUND));
+            }
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.WORKSPACE_VIEW_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
 }

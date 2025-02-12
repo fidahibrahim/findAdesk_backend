@@ -1,4 +1,4 @@
-import {IWorkspace} from "../../entities/workspaceEntity";
+import {editWorkspaceData, IWorkspace} from "../../entities/workspaceEntity";
 
 export interface IWorkspaceRes<IWorkspace> {
     status: boolean;
@@ -12,5 +12,5 @@ export default interface IWorkspaceUseCase {
     listWorkspaces(ownerId: string | undefined, search: string, page: number, limit: number): Promise<{ workspaces: IWorkspace[]|null; totalPages: number}>
     viewDetails(workspaceId: string): Promise<IWorkspace|null>
     deleteWorkspace(workspaceId: string): Promise<string|null>
-    editWorkspace( workspaceId: string, data: IWorkspace ): Promise<IWorkspaceRes<IWorkspace>>
+    editWorkspace( workspaceId: string, data: IWorkspace ): Promise<IWorkspaceRes<editWorkspaceData>>
 }

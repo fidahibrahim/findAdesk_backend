@@ -1,4 +1,4 @@
-import { IWorkspace } from "../entities/workspaceEntity";
+import { editWorkspaceData, IWorkspace } from "../entities/workspaceEntity";
 import { createImageUrl, sendObjectToS3 } from "../infrastructure/utils/s3Bucket";
 import { randomImageName, sharpImage } from "../infrastructure/utils/sharpedImages";
 import { IOwnerRepository } from "../interface/Repository/ownerRepository";
@@ -72,6 +72,7 @@ export default class workspaceUseCase implements IWorkspaceUseCase {
     async viewDetails(workspaceId: string) {
         try {
             const response = await this.workspaceRepository.viewDetails(workspaceId)
+            console.log(response, "response in usecase")
             return response
         } catch (error) {
             throw error
@@ -89,10 +90,10 @@ export default class workspaceUseCase implements IWorkspaceUseCase {
             throw error
         }
     }
-    async editWorkspace(workspaceId: string, data: IWorkspace) {
+    async editWorkspace(workspaceId: string, data: editWorkspaceData) {
         try {
-            const newImageUrls = data.images ? await Promise.all(
-                data.images.map(async (file: any) => {
+            const newImageUrls = data.newImages ? await Promise.all(
+                data.newImages.map(async (file: any) => {
                     try {
                         const sharpedImage = await sharpImage(2000, 2000, file.buffer);
                         const imageName = randomImageName();
@@ -104,17 +105,23 @@ export default class workspaceUseCase implements IWorkspaceUseCase {
                     }
                 })
             ) : [];
+
             const validNewImageUrls = newImageUrls.filter(
                 (url): url is string => url !== null
             );
+
             const allImages = [...(data.existingImages || []), ...validNewImageUrls];
+
             const workspaceData = {
                 ...data,
                 images: allImages
             };
 
+            delete workspaceData.newImages; 
+            delete workspaceData.existingImages;
+
             const response = await this.workspaceRepository.editWorkspace(workspaceId, workspaceData)
-            console.log(response,"res")
+            console.log(response, "response in usecase")
             if (response) {
                 return {
                     status: true,

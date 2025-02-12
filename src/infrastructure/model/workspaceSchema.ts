@@ -59,7 +59,7 @@ const workspaceSchema = new Schema ({
         type: String,
         default: ''
     },
-    aminities: {
+    amenities: {
         type: [String],
         required: true
     },
