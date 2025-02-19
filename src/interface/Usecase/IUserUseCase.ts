@@ -58,6 +58,7 @@ export interface IuserUseCase {
     login(data: loginBody): Promise<loginRes | null>
     fetchGoogleUserDetails(access_token: string): Promise<loginRes | null>
     validateForgotPassword(email: string): Promise<string | null>
+    changePassword(token: string, password: string): Promise<{ success: boolean; message: string; }>
     contactService(name: string, email: string, subject: string, message: string): Promise<string>
     getProfile(userId: string|undefined): Promise<Iuser|null>
     getRecentWorkspaces(): Promise<IWorkspace[]|null>

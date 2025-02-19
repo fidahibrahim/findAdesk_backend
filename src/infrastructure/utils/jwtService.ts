@@ -22,6 +22,7 @@ export default class JwtToken implements jwtService {
         try {
             let secretKey = process.env.JWT_SECRET_KEY
             let decoded = jwt.verify(token, secretKey!) as DecodedJwt
+            console.log("Decoded JWT:", decoded); 
             return decoded
         } catch (error) {
             if (error instanceof jwt.TokenExpiredError) {

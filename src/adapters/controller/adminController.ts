@@ -18,6 +18,7 @@ export class adminController implements IAdminController {
         this.blockOwner = this.blockOwner.bind(this)
         this.getWorkspaces = this.getWorkspaces.bind(this)
         this.updateStatus = this.updateStatus.bind(this)
+        this.viewWorkspaceDetails = this.viewWorkspaceDetails.bind(this)
     }
 
     async login(req: Request, res: Response) {
@@ -134,6 +135,24 @@ export class adminController implements IAdminController {
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.UPDATE_WORKSPACE_STATUS_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+    async viewWorkspaceDetails(req: Request, res: Response) {
+        try {
+            const workspaceId = req.query.workspaceId as string
+            const response = await this.adminUsecase.workspaceDetails(workspaceId)
+            console.log(response, "response in controller")
+            if (response) {
+                res.status(HttpStatusCode.OK)
+                    .json(handleSuccess(ResponseMessage.WORKSPACE_VIEW_SUCCESS, HttpStatusCode.OK, response));
+            } else {
+                res.status(HttpStatusCode.NOT_FOUND)
+                    .json(handleError(ResponseMessage.WORKSPACE_NOT_FOUND, HttpStatusCode.NOT_FOUND));
+            }
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.WORKSPACE_VIEW_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 }

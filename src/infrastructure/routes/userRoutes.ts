@@ -40,7 +40,7 @@ userRouter.post('/contactUs', userController.contactService)
 userRouter.get('/getProfile', authenticateUser, userController.getProfile)
 
 userRouter.get('/recents', userController.getRecentWorkspaces)
-userRouter.post('/searchWorkspaces', userController.filterWorkspaces)
-userRouter.get('/workspaceDetails', userController.workspaceDetails)
+userRouter.post('/searchWorkspaces', authenticateUser, userController.filterWorkspaces)
+userRouter.get('/workspaceDetails', authenticateUser, userController.workspaceDetails)
 
 export default userRouter

@@ -5,6 +5,7 @@ import IjwtService from "../interface/Utils/jwtService"
 import Iuser from "../entities/userEntity";
 import IOwner from "../entities/ownerEntity";
 import IotpService from "../interface/Utils/otpService";
+import { IWorkspace } from "../entities/workspaceEntity";
 
 
 export default class adminUseCase implements IadminUseCase {
@@ -132,6 +133,15 @@ export default class adminUseCase implements IadminUseCase {
             }
         } catch (error) {
 
+        }
+    }
+
+    async workspaceDetails(workspaceId: string) {
+        try {
+            const response = await this.adminRepository.workspaceDetails(workspaceId)
+            return response
+        } catch (error) {
+            throw error
         }
     }
 }

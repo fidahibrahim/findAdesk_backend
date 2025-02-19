@@ -38,6 +38,7 @@ adminRouter.patch("/blockOwner", adminAuth, AdminController.blockOwner)
 
 // workspace management
 adminRouter.get("/getWorkspaces", adminAuth, AdminController.getWorkspaces)
+adminRouter.get('/workspaceDetails', adminAuth, AdminController.viewWorkspaceDetails)
 adminRouter.put("/updateStatus", adminAuth, AdminController.updateStatus)
 
 export default adminRouter

@@ -18,6 +18,7 @@ export class UserController {
         this.login = this.login.bind(this)
         this.googleLogin = this.googleLogin.bind(this)
         this.forgotPassword = this.forgotPassword.bind(this)
+        this.changePassword = this.changePassword.bind(this)
         this.getProfile = this.getProfile.bind(this)
         this.contactService = this.contactService.bind(this)
         this.getRecentWorkspaces = this.getRecentWorkspaces.bind(this)
@@ -181,9 +182,14 @@ export class UserController {
     async changePassword(req: Request, res: Response) {
         try {
             const { token, password } = req.body
+            const response = await this.userUseCase.changePassword(token, password)
+            console.log(response, "response in controller")
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.PASSWORD_RESET_SUCCESS, HttpStatusCode.OK))
+
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-                .json(handleError(ResponseMessage.LOGOUT_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+                .json(handleError(ResponseMessage.PASSWORD_RESET_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
     async contactService(req: Request, res: Response) {

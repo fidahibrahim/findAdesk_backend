@@ -180,6 +180,26 @@ export default class userUseCase implements IuserUseCase {
             throw error
         }
     }
+    async changePassword(token: string, password: string) {
+        console.log(token, password)
+        try {
+            const decoded: any = this.jwtService.verifyToken(token)
+            
+            console.log(decoded)
+            const user = await this.userRepository.findById(decoded.userId)
+            console.log(user)
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+            const hashedPass = await this.hashingService.hashing(password);
+            console.log(hashedPass,"hashed pass in usecase")
+            await this.userRepository.changePassword(decoded.userId, hashedPass)
+            return { success: true, message: "Password changed successfully" };
+        } catch (error) {
+            throw error
+        }
+    }
     async contactService(name: string, email: string, subject: string, message: string) {
         try {
             await this.otpService.contactEmailService(name, email, subject, message)
@@ -213,7 +233,6 @@ export default class userUseCase implements IuserUseCase {
     async workspaceDetails(workspaceId: string) {
         try {
             const response = await this.userRepository.workspaceDetails(workspaceId)
-            console.log(response, "response in usecase")
             return response
         } catch (error) {
             throw error

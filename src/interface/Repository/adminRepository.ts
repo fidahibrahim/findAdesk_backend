@@ -13,4 +13,5 @@ export default interface IadminRepository {
     findWorkspace(workspaceId: string): Promise<IWorkspace | null>
     getWorkspaces(search: string, page: number, limit: number, status?: string): Promise<{ workspaces: IWorkspace[] | null; totalCount: number }>
     updateStatus(workspaceId: string, status: string): Promise<IWorkspace | null>
+    workspaceDetails(workspaceId: string): Promise<IWorkspace | null>
 }

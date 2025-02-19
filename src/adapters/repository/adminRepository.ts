@@ -141,5 +141,14 @@ export default class adminRepository implements IadminRepository {
             throw error
         }
     }
+    async workspaceDetails(workspaceId: string) {
+        try {
+            const response = await this.workspace.findById(workspaceId)
+            console.log(response, "response in repo")
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
 }
 

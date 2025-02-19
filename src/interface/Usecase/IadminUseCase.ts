@@ -22,4 +22,5 @@ export interface IadminUseCase {
     blockOwner(id: string): Promise<string | null>
     getWorkspaces(search: string, page: number, limit: number, status?:string): Promise<{ workspaces: IWorkspace[] | null; totalPages: number }>
     updateStatus(workspaceId: string, status: string): Promise<IWorkspace | undefined>
+    workspaceDetails(workspaceId: string): Promise<IWorkspace|null>
 }

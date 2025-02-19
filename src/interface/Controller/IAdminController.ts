@@ -8,6 +8,7 @@ export interface IAdminController {
     getOwners(req: Request, res: Response): Promise<void>
     blockOwner(req: Request, res: Response): Promise<void>
     getWorkspaces(req: Request, res: Response): Promise<void>
+    viewWorkspaceDetails(req: Request, res: Response): Promise<void>
     updateStatus(req: Request, res: Response): Promise<void>
 
 }

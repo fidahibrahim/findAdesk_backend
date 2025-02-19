@@ -35,6 +35,13 @@ export default class userRepository implements IuserRepository {
             throw error
         }
     }
+    async findById(userId: string) {
+        try {
+            return await this.user.findById(userId)
+        } catch (error) {
+            throw error
+        }
+    }
     async saveOtp(email: string, otp: string) {
         try {
             await this.otp.deleteMany({ email });
@@ -78,6 +85,14 @@ export default class userRepository implements IuserRepository {
                 user = existUser
             }
             return user
+        } catch (error) {
+            throw error
+        }
+    }
+    async changePassword(userId: string, password: string) {
+        try {
+            console.log(userId,password,"in repo")
+            return await this.user.findByIdAndUpdate(userId, {password: password}, { new: true })
         } catch (error) {
             throw error
         }
@@ -139,7 +154,7 @@ export default class userRepository implements IuserRepository {
 
                 }
             }
-            // query.status = "Approved";
+            query.status = "Approved";
             return await this.workspace.find(query).sort(sortOptions)
 
         } catch (error) {
@@ -149,7 +164,6 @@ export default class userRepository implements IuserRepository {
     async workspaceDetails(workspaceId: string) {
         try {
             const response = await this.workspace.findById(workspaceId)
-            console.log(response, "response from repository")
             return response
         } catch (error) {
             throw error
