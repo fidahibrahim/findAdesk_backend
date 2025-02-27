@@ -129,10 +129,18 @@ export default class userRepository implements IuserRepository {
                     { state: { $regex: filters.location, $options: "i" } }
                 ];
             }
-            if (filters.date) {
-                const searchDate = new Date(filters.date);
-                query.startTime = { $lte: searchDate };
-                query.endTime = { $gte: searchDate };
+            if (filters.day) {
+                const day = filters.day.toLowerCase();
+                const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+                const weekends = ['saturday', 'sunday'];
+
+                let dayCategories = ['allDays'];
+                if (weekdays.includes(day)) {
+                    dayCategories.push('weekdays');
+                } else if (weekends.includes(day)) {
+                    dayCategories.push('weekends');
+                }
+                query.workingDays = { $in: dayCategories };
             }
             if (filters.amenities && filters.amenities.length > 0) {
                 query.amenities = filters.amenities.length ?

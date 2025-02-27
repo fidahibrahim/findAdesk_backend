@@ -24,6 +24,7 @@ export class UserController {
         this.getRecentWorkspaces = this.getRecentWorkspaces.bind(this)
         this.filterWorkspaces = this.filterWorkspaces.bind(this)
         this.workspaceDetails = this.workspaceDetails.bind(this)
+        this.checkAvailability = this.checkAvailability.bind(this)
     }
 
     async register(req: Request, res: Response): Promise<void> {
@@ -245,7 +246,6 @@ export class UserController {
         try {
             const workspaceId = req.query.workspaceId as string
             const response = await this.userUseCase.workspaceDetails(workspaceId)
-            console.log(response, "response in controller")
             if (response) {
                 res.status(HttpStatusCode.OK)
                     .json(handleSuccess(ResponseMessage.WORKSPACE_VIEW_SUCCESS, HttpStatusCode.OK, response));
@@ -256,6 +256,17 @@ export class UserController {
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.WORKSPACE_VIEW_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+    async checkAvailability(req: Request, res: Response) {
+        try {
+            const workspaceId = req.query.workspaceId as string
+            const { date, startTime, endTime, seats } = req.body;
+            console.log(req.body)
+
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.AVAILABILITY_CHECK_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 

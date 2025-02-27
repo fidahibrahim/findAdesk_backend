@@ -47,6 +47,7 @@ export interface Ifilter {
     type?: string;
     location?: string;
     date?: string;
+    day?: string;
     amenities?: string;
     sortBy?: 'recommended' | 'price-low' | 'price-high';
 }

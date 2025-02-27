@@ -42,5 +42,6 @@ userRouter.get('/getProfile', authenticateUser, userController.getProfile)
 userRouter.get('/recents', userController.getRecentWorkspaces)
 userRouter.post('/searchWorkspaces', authenticateUser, userController.filterWorkspaces)
 userRouter.get('/workspaceDetails', authenticateUser, userController.workspaceDetails)
+userRouter.post('/checkAvailability', authenticateUser, userController.checkAvailability)
 
 export default userRouter

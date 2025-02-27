@@ -108,9 +108,7 @@ export class workspaceController {
                 existingImages,
                 newImages: req.files,
             }
-            console.log(formData,"formdata in cotroller")
             const updatedWorkspace = await this.workspaceUseCase.editWorkspace(workspaceId, formData)
-            console.log(updatedWorkspace, "workspace updated in controller")
             if (updatedWorkspace) {
                 res.status(200).json({
                     success: true,

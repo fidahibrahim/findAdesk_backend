@@ -64,5 +64,9 @@ export enum ResponseMessage {
     EDIT_WORKSPACE_SUCCESS = "Workspace updated successfully",
     EDIT_WORKSPACE_FAILURE = "Failed to update workspace",
 
+    //Booking
+    AVAILABILITY_CHECK_SUCCESS = "Workspace is available for Booking",
+    AVAILABILITY_CHECK_FAILURE = "Availability check failed!"
+
   }
   
