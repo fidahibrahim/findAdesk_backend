@@ -1,4 +1,3 @@
-
 export interface IWorkspace {
     _id: string;
     ownerId: string;

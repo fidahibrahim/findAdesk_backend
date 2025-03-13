@@ -5,7 +5,10 @@ import IhashingService from "../interface/Utils/hashingService"
 import IotpService from "../interface/Utils/otpService"
 import IjwtService from "../interface/Utils/jwtService"
 import axios from "axios";
-import { IWorkspace } from "../entities/workspaceEntity";
+import sharp from "sharp";
+import Iuser from "../entities/userEntity";
+import { createImageUrl, sendObjectToS3 } from "../infrastructure/utils/s3Bucket";
+import { ResponseMessage } from "../constants/responseMssg";
 
 export default class userUseCase implements IuserUseCase {
     private userRepository: IuserRepository;
@@ -181,19 +184,13 @@ export default class userUseCase implements IuserUseCase {
         }
     }
     async changePassword(token: string, password: string) {
-        console.log(token, password)
         try {
             const decoded: any = this.jwtService.verifyToken(token)
-            
-            console.log(decoded)
             const user = await this.userRepository.findById(decoded.userId)
-            console.log(user)
-
             if (!user) {
                 throw new Error("User not found");
             }
             const hashedPass = await this.hashingService.hashing(password);
-            console.log(hashedPass,"hashed pass in usecase")
             await this.userRepository.changePassword(decoded.userId, hashedPass)
             return { success: true, message: "Password changed successfully" };
         } catch (error) {
@@ -214,6 +211,38 @@ export default class userUseCase implements IuserUseCase {
             return response
         } catch (error) {
             throw error
+        }
+    }
+    async editProfile(data: Iuser | null) {
+        try {
+            if (data?.image && typeof data.image !== "string") { 
+                const { originalname, mimetype, buffer } = data.image as Express.Multer.File; 
+                const optimizedImage = await sharp(buffer).resize(500).toBuffer();
+                await sendObjectToS3(originalname, mimetype, buffer, optimizedImage);
+                const imageUrl = await createImageUrl(originalname);
+                data.image = imageUrl; 
+            }
+            const response = await this.userRepository.updateProfile(data)
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async resetPassword(userId: string, currentPassword: string, newPassword: string) {
+        try {
+            const user = await this.userRepository.findById(userId)
+            if (!user) {
+                throw new Error(ResponseMessage.USER_NOT_FOUND);
+            }
+            const isPasswordValid = await this.hashingService.compare(currentPassword, user.password) 
+            if (!isPasswordValid) {
+                throw new Error(ResponseMessage.INVALID_PASSWORD);
+            }
+            const hashedPass = await this.hashingService.hashing(newPassword)
+            const response = await this.userRepository.resetPassword(userId, hashedPass)
+            return response
+        } catch (error) {
+           throw error 
         }
     }
     async getRecentWorkspaces() {

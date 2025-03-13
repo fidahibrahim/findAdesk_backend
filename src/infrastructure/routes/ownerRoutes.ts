@@ -14,7 +14,6 @@ import workspaceUseCase from "../../usecases/workspaceUseCase"
 import workspaceModel from "../model/workspaceSchema"
 import ownerAuth from "../middleware/ownerAuth"
 
-
 const ownerRouter: Router = express.Router()
 const upload = multer()
 

@@ -91,7 +91,6 @@ export default class userRepository implements IuserRepository {
     }
     async changePassword(userId: string, password: string) {
         try {
-            console.log(userId,password,"in repo")
             return await this.user.findByIdAndUpdate(userId, {password: password}, { new: true })
         } catch (error) {
             throw error
@@ -101,6 +100,43 @@ export default class userRepository implements IuserRepository {
         try {
             const response = await this.user.findById(userId)
             return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async updateProfile(data: Iuser | null) {
+        try {
+            if (!data) throw new Error("Invalid user data");
+            const updatedUser = await this.user.findOneAndUpdate(
+                {email: data.email},
+                {
+                    $set: {
+                        name: data.name,
+                        email: data.email,
+                        image: data.image
+                    }
+                },
+                { new: true }
+            )
+            return updatedUser
+        } catch (error) {
+            throw error
+        }
+    }
+    async resetPassword(userId: string, newPassword: string) {
+        try {
+            if (!userId) throw new Error("Invalid user data");
+            const updatedUser = await this.user.findOneAndUpdate(
+                { _id: userId },
+                {
+                    $set: {
+                        password: newPassword
+                    }
+                },
+                { new: true }
+            )
+            console.log(updatedUser,"updatedUser in repo")
+            return updatedUser
         } catch (error) {
             throw error
         }
@@ -120,7 +156,6 @@ export default class userRepository implements IuserRepository {
         try {
             const query: any = {}
             const sortOptions: any = {}
-
             if (filters.type) query.workspaceType = filters.type;
             if (filters.location) {
                 query.$or = [

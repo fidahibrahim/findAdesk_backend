@@ -6,7 +6,6 @@ export interface IWorkspaceRes<IWorkspace> {
     data?: IWorkspace
 }
 
-
 export default interface IWorkspaceUseCase {
     addWorkspace(data: IWorkspace): Promise<IWorkspaceRes<IWorkspace>>
     listWorkspaces(ownerId: string | undefined, search: string, page: number, limit: number): Promise<{ workspaces: IWorkspace[]|null; totalPages: number}>

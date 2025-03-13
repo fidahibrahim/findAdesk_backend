@@ -44,6 +44,13 @@ export default class workspaceRepository implements IWorkspaceRepository {
             throw error
         }
     }
+    async findWorkspace (workspaceId: string) {
+        try {
+            return await this.workspace.findById(workspaceId)
+        } catch (error) {
+            throw error
+        }
+    }
     async checkEmailExists(workspaceMail: string) {
         try {
             return await this.workspace.findOne({ workspaceMail })
@@ -76,7 +83,6 @@ export default class workspaceRepository implements IWorkspaceRepository {
     async viewDetails(workspaceId: string) {
         try {
             const response = await this.workspace.findById(workspaceId)
-            console.log(response, "response from repository")
             return response
         } catch (error) {
             throw error
@@ -105,14 +111,12 @@ export default class workspaceRepository implements IWorkspaceRepository {
                     parsedAmenities = [];
                 }
             }
-
             const workspaceData = {
                 ...data,
                 amenities: parsedAmenities,
                 startTime: new Date(`2024-02-05T${data.startTime}`),
                 endTime: new Date(`2024-02-05T${data.endTime}`)
             };
-            console.log(workspaceData, "workspacedata in repository")
             const updatedWorkspace = await this.workspace.findByIdAndUpdate(
                 workspaceId,
                 { $set: workspaceData },
@@ -121,8 +125,6 @@ export default class workspaceRepository implements IWorkspaceRepository {
                     runValidators: true
                 }
             )
-
-            console.log(updatedWorkspace, "updated workspace in repository")
             if (!updatedWorkspace) {
                 throw new Error('Failed to update workspace');
             }

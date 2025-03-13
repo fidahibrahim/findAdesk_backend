@@ -8,7 +8,7 @@ export enum ResponseMessage {
     OTP_VERIFIED = "OTP verified successfully",
     OTP_VERIFICATION_FAILED = "Failed to verify OTP",
     PASSWORD_RESET_LINK_SENT = "Password reset link sent to your email",
-    PASSWORD_RESET_FAILURE = "Failed to send password reset link",
+    PASSWORD_RESET_FAILURE = "Failed to reset password",
     PASSWORD_RESET_SUCCESS = "Password has been reset",
     MAIL_SEND_SUCCESSFULLY = "Mail sended successfully",
     FAILED_SENDING_MAIL = "Failed to send Mail",
@@ -34,6 +34,7 @@ export enum ResponseMessage {
     UPDATE_WORKSPACE_STATUS_FAILURE = "Failed to update status",
   
     //user
+    USER_NOT_FOUND = "User not found",
     USER_REGISTER_SUCCESS = "User registered successfully!",
     USER_REGISTER_FAILURE = "Failed to register user",
     GOOGLE_LOGIN_SUCCESS = "Successfully authenticated with Google",
@@ -43,6 +44,8 @@ export enum ResponseMessage {
     FETCH_USER_FAILURE = "Failed to fetch users",
     FETCH_PROFILE = "User profile fetched successfully",
     FETCH_PROFILE_FAILURE = "Failed to fetch user profile",
+    UPDATE_PROFILE_SUCCESS = "Profile updated successfully",
+    UPDATE_PROFILE_FAILURE = "Failed to update",
   
     //owner
     OWNER_REGISTER_SUCCESS = "Owner registered successfully!",

@@ -1,4 +1,4 @@
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import { AuthenticatedRequest } from "../../infrastructure/middleware/ownerAuth";
 import IWorkspaceUseCase from "../../interface/Usecase/IWorkspaceUseCase";
 import { HttpStatusCode } from "../../constants/httpStatusCode";
@@ -73,7 +73,6 @@ export class workspaceController {
         try {
             const workspaceId = req.query.workspaceId as string
             const response = await this.workspaceUseCase.viewDetails(workspaceId)
-            console.log(response, "response in controller")
             if (response) {
                 res.status(HttpStatusCode.OK).json(handleSuccess(ResponseMessage.WORKSPACE_VIEW_SUCCESS, HttpStatusCode.OK, response));
             } else {
@@ -116,7 +115,6 @@ export class workspaceController {
                 });
             }
         } catch (error) {
-            console.log(error)
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.EDIT_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }

@@ -24,6 +24,8 @@ export interface IUserController{
     changePassword(req: Request, res: Response): Promise<void>
     contactService(req: Request, res: Response): Promise<void>
     getProfile(req: Request, res: Response): Promise<void>
+    editProfile(req: Request, res: Response): Promise<void>
+    resetPassword(req: Request, res: Response): Promise<void>
     getRecentWorkspaces(req: Request, res: Response): Promise<void>
     filterWorkspaces(req: Request, res: Response): Promise<void>
     workspaceDetails(req: Request, res: Response): Promise<void>

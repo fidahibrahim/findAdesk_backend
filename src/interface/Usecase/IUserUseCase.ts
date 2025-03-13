@@ -62,6 +62,8 @@ export interface IuserUseCase {
     changePassword(token: string, password: string): Promise<{ success: boolean; message: string; }>
     contactService(name: string, email: string, subject: string, message: string): Promise<string>
     getProfile(userId: string|undefined): Promise<Iuser|null>
+    editProfile(data: Iuser): Promise<Iuser|null>
+    resetPassword(userId: string|undefined, currentPassword: string, newPassword: string): Promise<Iuser>
     getRecentWorkspaces(): Promise<IWorkspace[]|null>
     searchWorkspaces(filters: Ifilter): Promise<IWorkspace[]|null>
     workspaceDetails(workspaceId: string): Promise<IWorkspace|null>

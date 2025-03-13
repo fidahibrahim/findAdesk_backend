@@ -1,4 +1,3 @@
-import { responseEncoding } from "axios";
 import { HttpStatusCode } from "../../constants/httpStatusCode";
 import { ResponseMessage } from "../../constants/responseMssg";
 import { AuthenticatedRequest } from "../../infrastructure/middleware/userAuth";
@@ -6,10 +5,8 @@ import { handleError, handleSuccess } from "../../infrastructure/utils/responseH
 import { IuserUseCase } from "../../interface/Usecase/IUserUseCase";
 import { Request, Response } from "express"
 
-
 export class UserController {
     private userUseCase: IuserUseCase
-
     constructor(userUseCase: IuserUseCase) {
         this.userUseCase = userUseCase
         this.register = this.register.bind(this)
@@ -20,13 +17,13 @@ export class UserController {
         this.forgotPassword = this.forgotPassword.bind(this)
         this.changePassword = this.changePassword.bind(this)
         this.getProfile = this.getProfile.bind(this)
+        this.editProfile = this.editProfile.bind(this)
+        this.resetPassword = this.resetPassword.bind(this)
         this.contactService = this.contactService.bind(this)
         this.getRecentWorkspaces = this.getRecentWorkspaces.bind(this)
         this.filterWorkspaces = this.filterWorkspaces.bind(this)
         this.workspaceDetails = this.workspaceDetails.bind(this)
-        this.checkAvailability = this.checkAvailability.bind(this)
     }
-
     async register(req: Request, res: Response): Promise<void> {
         try {
             const { username: name, email, password } = req.body
@@ -42,7 +39,6 @@ export class UserController {
                 password
             }
             const response = await this.userUseCase.register(data)
-
             res
                 .status(HttpStatusCode.CREATED)
                 .json(handleSuccess(ResponseMessage.USER_REGISTER_SUCCESS, HttpStatusCode.CREATED, response));
@@ -51,7 +47,6 @@ export class UserController {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(handleError(ResponseMessage.USER_REGISTER_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-
     async verifyOtp(req: Request, res: Response) {
         try {
             const { otp, email } = req.body
@@ -69,11 +64,9 @@ export class UserController {
             res.json(error)
         }
     }
-
     async resendOtp(req: Request, res: Response) {
         try {
             const { email } = req.body
-            console.log(email, "email from body ");
             const response = await this.userUseCase.resendOtp(email)
             if (response == "ResendOtp successfull") {
                 res.json({ status: 200 });
@@ -124,7 +117,6 @@ export class UserController {
                 .json(handleError(ResponseMessage.LOGIN_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-
     async logout(req: Request, res: Response) {
         try {
             res.cookie("userToken", "", { httpOnly: true, expires: new Date() }).cookie("userRefreshToken", "", { httpOnly: true, expires: new Date() })
@@ -136,7 +128,6 @@ export class UserController {
                 .json(handleError(ResponseMessage.LOGOUT_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-
     async googleLogin(req: Request, res: Response) {
         try {
             const { access_token } = req.body
@@ -159,7 +150,6 @@ export class UserController {
                 .json(handleError(ResponseMessage.GOOGLE_LOGIN_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-
     async forgotPassword(req: Request, res: Response) {
         try {
             const { email } = req.body
@@ -179,12 +169,10 @@ export class UserController {
                 .json(handleError(ResponseMessage.PASSWORD_RESET_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-
     async changePassword(req: Request, res: Response) {
         try {
             const { token, password } = req.body
-            const response = await this.userUseCase.changePassword(token, password)
-            console.log(response, "response in controller")
+            await this.userUseCase.changePassword(token, password)
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.PASSWORD_RESET_SUCCESS, HttpStatusCode.OK))
 
@@ -220,10 +208,37 @@ export class UserController {
                 .json(handleError(ResponseMessage.FETCH_PROFILE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
+    async editProfile(req: Request, res: Response) {
+        try {
+            const formData = {
+                ...req.body,
+                image: req.file,
+            }
+            const response = await this.userUseCase.editProfile(formData)
+            if (response) {
+                res.status(HttpStatusCode.OK)
+                    .json(handleSuccess(ResponseMessage.UPDATE_PROFILE_SUCCESS, HttpStatusCode.OK))
+            }
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.UPDATE_PROFILE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+    async resetPassword(req: AuthenticatedRequest, res: Response) {
+        try {
+            const userId = req.user?.userId
+            const { currentPassword, newPassword } = req.body
+            await this.userUseCase.resetPassword(userId, currentPassword, newPassword)
+            res.status(HttpStatusCode.OK)
+                .json(handleError(ResponseMessage.PASSWORD_RESET_SUCCESS, HttpStatusCode.OK))
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.PASSWORD_RESET_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
     async getRecentWorkspaces(req: Request, res: Response) {
         try {
             const response = await this.userUseCase.getRecentWorkspaces()
-            console.log(response)
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.FETCH_WORKSPACE_SUCCESS, HttpStatusCode.OK, response))
         } catch (error) {
@@ -258,16 +273,4 @@ export class UserController {
                 .json(handleError(ResponseMessage.WORKSPACE_VIEW_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-    async checkAvailability(req: Request, res: Response) {
-        try {
-            const workspaceId = req.query.workspaceId as string
-            const { date, startTime, endTime, seats } = req.body;
-            console.log(req.body)
-
-        } catch (error) {
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-                .json(handleError(ResponseMessage.AVAILABILITY_CHECK_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
-        }
-    }
-
 }

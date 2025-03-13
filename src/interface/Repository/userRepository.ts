@@ -19,6 +19,8 @@ export interface IuserRepository {
     updateUserVerified(email: string): Promise<IUser | null>
     googleUser(data: GoogleProfileResponse): Promise<any>
     getProfile(userId: string | undefined): Promise<IUser | null>
+    updateProfile(data: IUser|null): Promise<IUser|null>
+    resetPassword(userId: string, newPassword: string): Promise<any>
     changePassword(userId: string, password: string): Promise<IUser|null>
     getRecentWorkspaces(): Promise<IWorkspace[] | null>
     findWorkspaces(filters: Ifilter): Promise<IWorkspace[] | null>
