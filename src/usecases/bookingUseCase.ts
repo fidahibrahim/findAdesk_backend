@@ -1,16 +1,20 @@
 import { IBookingRepository } from "../interface/Repository/bookingRepository";
+import { IuserRepository } from "../interface/Repository/userRepository";
 import { IWorkspaceRepository } from "../interface/Repository/workspaceRepository";
-import { IBookingUseCase, AvailabilityRequest } from "../interface/Usecase/IBookingUseCase";
+import { IBookingUseCase, AvailabilityRequest, CreateBookingData } from "../interface/Usecase/IBookingUseCase";
 
 export default class bookingUseCase implements IBookingUseCase {
     private bookingRepository: IBookingRepository;
     private workspaceRepository: IWorkspaceRepository;
+    private userRepository: IuserRepository;
     constructor(
         bookingRepository: IBookingRepository,
-        workspaceRepository: IWorkspaceRepository
+        workspaceRepository: IWorkspaceRepository,
+        userRepository: IuserRepository
     ) {
         this.bookingRepository = bookingRepository
         this.workspaceRepository = workspaceRepository
+        this.userRepository = userRepository
     }
 
     async checkAvailability(data: AvailabilityRequest) {
@@ -23,7 +27,6 @@ export default class bookingUseCase implements IBookingUseCase {
                     message: 'Workspace not found'
                 };
             }
-            console.log(workspace, "workspace in usecase")
             const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
             const weekends = ['saturday', 'sunday'];
             const dayLower = day.toLowerCase();
@@ -60,7 +63,24 @@ export default class bookingUseCase implements IBookingUseCase {
                 isAvailable: true,
                 message: 'Workspace is available for the requested time',
             }
-
+        } catch (error) {
+            throw error
+        }
+    }
+    async createBooking(data: CreateBookingData) {
+        try {
+            console.log(data, "data in usecase")
+            const bookingId = `BOOK-${Date.now()}`;
+            const booking = {
+                ...data,
+                bookingId
+            }
+            if (data.mobile) {
+                const userId = data.userId.toString();
+                await this.userRepository.updateUserMobile(userId, data.mobile)
+            }
+            const response = await this.bookingRepository.createBooking(booking)
+            return response
         } catch (error) {
             throw error
         }

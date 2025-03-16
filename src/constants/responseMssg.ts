@@ -69,7 +69,10 @@ export enum ResponseMessage {
 
     //Booking
     AVAILABILITY_CHECK_SUCCESS = "Workspace is available for Booking",
-    AVAILABILITY_CHECK_FAILURE = "Availability check failed!"
+    AVAILABILITY_CHECK_FAILURE = "Availability check failed!",
+    BOOKING_CONFIRMATION = "Your booking has been confirmed",
+    BOOKING_FAILURE = "Your booking has been failed",
+    
 
   }
   

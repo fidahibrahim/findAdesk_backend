@@ -3,6 +3,7 @@ export default interface Iuser{
     name: string;
     email: string;
     password: string; 
+    mobile?: string;
     image?: string;
     isVerified?: boolean;
     isAdmin?: boolean   

@@ -212,4 +212,12 @@ export default class userRepository implements IuserRepository {
             throw error
         }
     }
+    async updateUserMobile(userId: string, mobile: string) {
+        try {
+            await this.user.findByIdAndUpdate(userId, { mobile })
+            return true
+        } catch (error) {
+            throw error
+        }
+    }
 }

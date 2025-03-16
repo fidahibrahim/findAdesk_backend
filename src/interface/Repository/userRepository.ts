@@ -25,4 +25,5 @@ export interface IuserRepository {
     getRecentWorkspaces(): Promise<IWorkspace[] | null>
     findWorkspaces(filters: Ifilter): Promise<IWorkspace[] | null>
     workspaceDetails(workspaceId: string): Promise<IWorkspace | null>
+    updateUserMobile(userId: string, mobile: string): Promise<boolean>
 }

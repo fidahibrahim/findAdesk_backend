@@ -27,6 +27,7 @@ const UserRepository = new userRepository(users, OtpSchema, workspaceModel)
 const BookingRepository = new bookingRepository(bookingModel)
 const WorkspaceRepository = new workspaceRepository(workspaceModel)
 
+
 const UserUseCase = new userUseCase(
     UserRepository,
     hashingService,
@@ -35,7 +36,8 @@ const UserUseCase = new userUseCase(
 )
 const BookingUseCase = new bookingUseCase(
     BookingRepository,
-    WorkspaceRepository
+    WorkspaceRepository,
+    UserRepository
 )
 
 const userController = new UserController(UserUseCase)
@@ -61,5 +63,6 @@ userRouter.get('/recents', userController.getRecentWorkspaces)
 userRouter.post('/searchWorkspaces', authenticateUser, userController.filterWorkspaces)
 userRouter.get('/workspaceDetails', authenticateUser, userController.workspaceDetails)
 userRouter.post('/checkAvailability', authenticateUser, BookingController.checkAvailability)
+userRouter.post('/bookings', authenticateUser, BookingController.createBooking)
 
 export default userRouter

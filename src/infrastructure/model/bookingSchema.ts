@@ -3,11 +3,13 @@ import { IBooking } from "../../entities/bookingEntity";
 
 const bookingSchema = new Schema<IBooking>({
     userId: {
-        type: mongoose.Types.ObjectId,
+        type: Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
     workspaceId: {
-        type: mongoose.Types.ObjectId,
+        type: Schema.Types.ObjectId,
+        ref: 'Workspace',
         required: true
     },
     bookingId: {
@@ -25,6 +27,13 @@ const bookingSchema = new Schema<IBooking>({
     endTime: {
         type: Date,
         required: true
+    },
+    seats: {
+        type: String,
+        required: true
+    },
+    concern: {
+        type: String
     },
     total: {
         type: Number,

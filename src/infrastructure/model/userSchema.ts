@@ -13,6 +13,9 @@ const userSchema = new Schema<Iuser>({
     password: {
         type: String,
     },
+    mobile: {
+        type: String
+    },
     image: {
         type: String,
         default: " https://github.com/shadcn.png "
