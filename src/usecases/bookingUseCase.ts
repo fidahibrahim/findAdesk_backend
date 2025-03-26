@@ -19,7 +19,7 @@ export default class bookingUseCase implements IBookingUseCase {
 
     async checkAvailability(data: AvailabilityRequest) {
         try {
-            const { workspaceId, date, startTime, endTime, seats, day } = data;
+            const { workspaceId, startTime, endTime, seats, day } = data;
             const workspace = await this.workspaceRepository.findWorkspace(workspaceId)
             if (!workspace) {
                 return {
@@ -69,7 +69,6 @@ export default class bookingUseCase implements IBookingUseCase {
     }
     async createBooking(data: CreateBookingData) {
         try {
-            console.log(data, "data in usecase")
             const bookingId = `BOOK-${Date.now()}`;
             const booking = {
                 ...data,
@@ -81,6 +80,14 @@ export default class bookingUseCase implements IBookingUseCase {
             }
             const response = await this.bookingRepository.createBooking(booking)
             return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async findProductName (workspaceId: string) {
+        try {
+            const workspace = await this.workspaceRepository.findWorkspace(workspaceId)
+            return workspace?.workspaceName
         } catch (error) {
             throw error
         }

@@ -13,6 +13,8 @@ dotenv.config()
 
 app.use(cookieParser())
 
+app.use("/api/webhook", express.raw({ type: "application/json" }));
+
 app.use(express.json({ limit: "100mb" }))
 app.use(express.urlencoded({ extended: true, limit: "100mb" }))
 

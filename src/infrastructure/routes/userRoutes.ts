@@ -63,6 +63,8 @@ userRouter.get('/recents', userController.getRecentWorkspaces)
 userRouter.post('/searchWorkspaces', authenticateUser, userController.filterWorkspaces)
 userRouter.get('/workspaceDetails', authenticateUser, userController.workspaceDetails)
 userRouter.post('/checkAvailability', authenticateUser, BookingController.checkAvailability)
+userRouter.post('/bookings/createStripeSession', BookingController.createStripeSession)
 userRouter.post('/bookings', authenticateUser, BookingController.createBooking)
+userRouter.post('/webhook', express.raw({ type: "application/json" }), BookingController.stripeWebhook)
 
 export default userRouter

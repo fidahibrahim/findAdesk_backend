@@ -29,4 +29,5 @@ export interface CreateBookingData {
 export interface IBookingUseCase {
     checkAvailability(data: AvailabilityRequest): Promise<AvailabilityResponse>
     createBooking(data: CreateBookingData): Promise<IBooking>
+    findProductName (workspaceId: string): Promise<string|undefined>
 }

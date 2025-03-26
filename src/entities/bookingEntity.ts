@@ -8,6 +8,7 @@ export interface IBooking {
     date: Date;
     startTime: Date;
     endTime: Date;
+    duration?: string;
     seats: string;
     concern: string;
     total: number;

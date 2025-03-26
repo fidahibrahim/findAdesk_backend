@@ -28,6 +28,9 @@ const bookingSchema = new Schema<IBooking>({
         type: Date,
         required: true
     },
+    duration: {
+        type: String,
+    },
     seats: {
         type: String,
         required: true
