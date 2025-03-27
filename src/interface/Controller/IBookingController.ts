@@ -8,4 +8,5 @@ export interface IBooking {
     stripeWebhook(req: Request, res: Response): Promise<void>
     listBookings(req: Request, res: Response): Promise<void>
     getBookingDetailsOwner(req: Request, res: Response): Promise<void>
+    bookingConfirmDetails(req: Request, res: Response): Promise<void>
 }

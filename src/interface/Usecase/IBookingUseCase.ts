@@ -47,4 +47,6 @@ export interface IBookingUseCase {
     findProductName(workspaceId: string): Promise<string | undefined>
     listBookings(ownerId: string, search: string, page: number, limit: number): Promise<{ bookings: IBooking[] | null; totalPages: number }>
     bookingViewDetails(bookingId: string): Promise<IBooking | null>
+    bookingConfirmDetails(bookingId: string): Promise<any>
+    updateBookingStatus(bookingId: string, status: string): Promise<any>
 }

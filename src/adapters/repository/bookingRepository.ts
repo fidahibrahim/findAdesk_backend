@@ -142,7 +142,6 @@ export default class bookingRepository implements IBookingRepository {
           },
         },
       ]);
-      console.log("response jshd", response);
 
       if (!response) throw new Error("Booking not found");
       return response;
@@ -184,7 +183,6 @@ export default class bookingRepository implements IBookingRepository {
           path: 'workspaceId',
           select: 'workspaceName workspaceMail place street state'
         })
-      console.log(response, 'response in repository')
       return response
     } catch (error) {
       throw error
@@ -200,7 +198,6 @@ export default class bookingRepository implements IBookingRepository {
       if (startDate && endDate) {
         matchStage.date = { $gte: startDate, $lte: endDate };
       }
-      console.log(matchStage, 'match stage in repository')
       const result = await this.booking.aggregate([
         { $match: matchStage },
         {
@@ -210,11 +207,57 @@ export default class bookingRepository implements IBookingRepository {
           }
         }
       ]);
-      console.log(result, 'result in repository')
       return result.length > 0 ? result[0].totalServiceFee : 0;
 
     } catch (error) {
       throw error
+    }
+  }
+
+  async getBookingHistory(userId: string | undefined) {
+    try {
+      const bookings = await this.booking.find({ userId: userId })
+        .populate({
+          path: 'workspaceId',
+          select: 'workspaceName workspaceMail place street state images'
+        })
+      return bookings
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async bookingConfirmDetails(bookingId: string) {
+    try {
+      const response = await this.booking.find({ bookingId: bookingId })
+        .populate({
+          path: 'userId',
+          select: 'name email mobile'
+        })
+        .populate({
+          path: 'workspaceId',
+          select: 'workspaceName workspaceMail place street state'
+        })
+      return response
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async updateBookingStatus(bookingId: string, status: string) {
+    try {
+      return await this.booking.findOneAndUpdate(
+        { bookingId: bookingId },
+        {
+          status: status,
+          updatedAt: new Date()
+        },
+        {
+          new: true,
+        }
+      );
+    } catch (error) {
+      throw error;
     }
   }
 }

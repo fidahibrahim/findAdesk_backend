@@ -30,6 +30,7 @@ const WorkspaceRepository = new workspaceRepository(workspaceModel)
 
 const UserUseCase = new userUseCase(
     UserRepository,
+    BookingRepository,
     hashingService,
     otpService,
     jwtService
@@ -58,6 +59,7 @@ userRouter.post('/contactUs', userController.contactService)
 userRouter.get('/getProfile', authenticateUser, userController.getProfile)
 userRouter.put('/editProfile', authenticateUser, upload.single('image'), userController.editProfile)
 userRouter.post('/profile/resetPassword', authenticateUser, userController.resetPassword)
+userRouter.get('/bookingHistory', authenticateUser, userController.getBookingHistory)
 
 userRouter.get('/recents', userController.getRecentWorkspaces)
 userRouter.post('/searchWorkspaces', authenticateUser, userController.filterWorkspaces)
@@ -67,5 +69,6 @@ userRouter.post('/pendingBookings', authenticateUser, BookingController.createBo
 userRouter.get( "/bookings/details", authenticateUser, BookingController.getBookingDetails)
 userRouter.post('/bookings/createStripeSession', BookingController.createStripeSession)
 userRouter.post('/webhook', express.raw({ type: "application/json" }), BookingController.stripeWebhook)
+userRouter.get('/bookingConfirmDetails', authenticateUser, BookingController.bookingConfirmDetails)
 
 export default userRouter

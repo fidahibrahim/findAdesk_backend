@@ -9,21 +9,25 @@ import sharp from "sharp";
 import Iuser from "../entities/userEntity";
 import { createImageUrl, sendObjectToS3 } from "../infrastructure/utils/s3Bucket";
 import { ResponseMessage } from "../constants/responseMssg";
+import { IBookingRepository } from "../interface/Repository/bookingRepository";
 
 export default class userUseCase implements IuserUseCase {
     private userRepository: IuserRepository;
+    private bookingRepository: IBookingRepository;
     private hashingService: IhashingService;
     private otpService: IotpService
     private jwtService: IjwtService
 
     constructor(
         userRepository: IuserRepository,
+        bookingRepository: IBookingRepository,
         HashingService: IhashingService,
         otpService: IotpService,
         jwtService: IjwtService
 
     ) {
         this.userRepository = userRepository;
+        this.bookingRepository = bookingRepository
         this.hashingService = HashingService;
         this.otpService = otpService
         this.jwtService = jwtService
@@ -267,4 +271,12 @@ export default class userUseCase implements IuserUseCase {
             throw error
         }
     }
-}
+    async getBookingHistory(userId: string | undefined) {
+        try {
+            const bookings = await this.bookingRepository.getBookingHistory(userId)
+            return bookings
+        } catch (error) {
+            throw error
+        }
+    }
+}   

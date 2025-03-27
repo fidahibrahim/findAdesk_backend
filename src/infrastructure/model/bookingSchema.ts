@@ -53,9 +53,6 @@ const bookingSchema = new Schema<IBooking>(
             type: String,
             required: true,
         },
-        // concern: {
-        //   type: String,
-        // },
         pricePerHour: {
             type: Number,
         },

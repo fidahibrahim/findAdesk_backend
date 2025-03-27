@@ -16,12 +16,11 @@ export interface IBooking {
     serviceFee?: number;
     day?: string;
     seats: string;
-    // concern: string;
     pricePerHour: number;
     subTotal: number;
     total: number;
     grandTotal: number;
-    status?: "pending" | "completed" | "cancelled";
+    status?: "pending" | "completed"
 }
 
 export interface ICreateBooking {

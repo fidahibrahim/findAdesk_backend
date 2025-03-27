@@ -23,6 +23,7 @@ export class UserController {
         this.getRecentWorkspaces = this.getRecentWorkspaces.bind(this)
         this.filterWorkspaces = this.filterWorkspaces.bind(this)
         this.workspaceDetails = this.workspaceDetails.bind(this)
+        this.getBookingHistory = this.getBookingHistory.bind(this)
     }
     async register(req: Request, res: Response): Promise<void> {
         try {
@@ -236,6 +237,20 @@ export class UserController {
                 .json(handleError(ResponseMessage.PASSWORD_RESET_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
+
+    async getBookingHistory(req: AuthenticatedRequestUser, res: Response) {
+        try {
+            const userId = req.user?.userId
+            const response = await this.userUseCase.getBookingHistory(userId)
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS, HttpStatusCode.OK, response));
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.BOOKING_VIEWDETAILS_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+
     async getRecentWorkspaces(req: Request, res: Response) {
         try {
             const response = await this.userUseCase.getRecentWorkspaces()

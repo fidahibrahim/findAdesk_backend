@@ -19,6 +19,7 @@ export class bookingController {
         this.stripeWebhook = this.stripeWebhook.bind(this)
         this.listBookings = this.listBookings.bind(this)
         this.getBookingDetailsOwner = this.getBookingDetailsOwner.bind(this)
+        this.bookingConfirmDetails = this.bookingConfirmDetails.bind(this)
     }
     async checkAvailability(req: Request, res: Response) {
         try {
@@ -41,35 +42,9 @@ export class bookingController {
                 .json(handleError(ResponseMessage.AVAILABILITY_CHECK_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-    // async createBooking(req: Request, res: Response) {
-    //     try {
-    //         const { userId, workspaceId, bookingDetails, mobile, specialRequests, total } = req.body;
-
-    //         await this.bookingUseCase.createBooking({
-    //             userId,
-    //             workspaceId,
-    //             date: new Date(bookingDetails.date),
-    //             startTime: new Date(`${bookingDetails.date}T${bookingDetails.startTime}:00`),
-    //             endTime: new Date(`${bookingDetails.date}T${bookingDetails.endTime}:00`),
-    //             mobile,
-    //             seats: bookingDetails.seats,
-    //             concern: specialRequests,
-    //             total,
-    //             status: "pending",
-    //         });
-    //         res.status(HttpStatusCode.OK)
-    //             .json(handleSuccess(ResponseMessage.BOOKING_CONFIRMATION, HttpStatusCode.OK))
-
-    //     } catch (error) {
-    //         res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-    //             .json(handleError(ResponseMessage.BOOKING_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
-    //     }
-    // }
     async createBooking(req: AuthenticatedRequestUser, res: Response) {
         try {
             const { workspaceId, bookingDetails, pricePerHour } = req.body;
-            console.log(typeof pricePerHour);
-
             const userId = req.user?.userId;
             const bookingId = generateId();
 
@@ -103,8 +78,6 @@ export class bookingController {
     async createStripeSession(req: Request, res: Response) {
         try {
             const { payload } = req.body;
-            console.log("my payload", payload);
-
             const workspaceId = payload.workspace.workspaceId;
             const workspaceName = await this.bookingUseCase.findProductName(
                 workspaceId
@@ -134,9 +107,10 @@ export class bookingController {
                     paymentMethod: payload.paymentMethod,
                     mobile: payload.phoneNumber,
                 },
-                success_url: "http://localhost:5000/bookingConfirmation",
+                success_url: `http://localhost:5000/bookingConfirmation/${payload.bookingId}`,
                 cancel_url: `http://localhost:5000/checkout/${payload.bookingId}`,
             });
+            await this.bookingUseCase.updateBookingStatus(payload.bookingId, 'completed')
             res
                 .status(HttpStatusCode.OK)
                 .json(
@@ -147,7 +121,6 @@ export class bookingController {
                     )
                 );
         } catch (error) {
-            console.log(error);
             res
                 .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(
@@ -160,14 +133,13 @@ export class bookingController {
     }
     async stripeWebhook(req: Request, res: Response) {
         try {
-            console.log('coming to controller')
             const sig = req.headers["stripe-signature"];
             const event = Stripe.webhooks.constructEvent(
                 req.body,
                 sig as string,
                 process.env.WEBHOOK_SECRET_KEY!
             );
-            console.log(event,'event')
+            console.log(event, 'event')
             if (event.type === "checkout.session.completed") {
                 const session = event.data.object;
                 console.log("session", session);
@@ -185,10 +157,7 @@ export class bookingController {
     async getBookingDetails(req: Request, res: Response) {
         try {
             const bookingId = req.query.bookingId as string;
-            console.log("bookingId inside controller", bookingId);
-
             const response = await this.bookingUseCase.getBookingDetails(bookingId);
-            console.log("response", response);
             res
                 .status(HttpStatusCode.OK)
                 .json(
@@ -199,8 +168,6 @@ export class bookingController {
                     )
                 );
         } catch (error) {
-            console.log(error);
-
             res
                 .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(
@@ -235,7 +202,17 @@ export class bookingController {
         try {
             const bookingId = req.query.bookingId as string
             const response = await this.bookingUseCase.bookingViewDetails(bookingId)
-            console.log(response, 'response in controller')
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS, HttpStatusCode.OK, response));
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.BOOKING_VIEWDETAILS_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+    async bookingConfirmDetails(req: Request, res: Response) {
+        try {
+            const bookingId = req.query.bookingId as string;
+            const response = await this.bookingUseCase.bookingConfirmDetails(bookingId)
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS, HttpStatusCode.OK, response));
         } catch (error) {

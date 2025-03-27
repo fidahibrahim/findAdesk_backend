@@ -140,9 +140,25 @@ export default class bookingUseCase implements IBookingUseCase {
     async bookingViewDetails(bookingId: string) {
         try {
             const response = await this.bookingRepository.bookingViewDetails(bookingId)
-            console.log(response, 'response in usecase')
             return response
         } catch (error) {
+            throw error
+        }
+    }
+    async bookingConfirmDetails(bookingId: string) {
+        try {
+            const response = await this.bookingRepository.bookingConfirmDetails(bookingId)
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async updateBookingStatus(bookingId: string, status: string) {
+        try {
+            const response = await this.bookingRepository.updateBookingStatus(bookingId, status)
+            return response
+        } catch (error) {
+            console.log(error)
             throw error
         }
     }
