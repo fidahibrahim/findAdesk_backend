@@ -5,22 +5,25 @@ import IjwtService from "../interface/Utils/jwtService"
 import Iuser from "../entities/userEntity";
 import IOwner from "../entities/ownerEntity";
 import IotpService from "../interface/Utils/otpService";
-import { IWorkspace } from "../entities/workspaceEntity";
+import { IBookingRepository } from "../interface/Repository/bookingRepository";
 
 
 export default class adminUseCase implements IadminUseCase {
     private adminRepository: IadminRepository
+    private bookingRepository: IBookingRepository
     private hashingService: IhashingService
     private jwtService: IjwtService
     private otpService: IotpService
     constructor(
         adminRepository: IadminRepository,
+        bookingRepository: IBookingRepository,
         hashingService: IhashingService,
         jwtService: IjwtService,
         otpService: IotpService,
 
     ) {
         this.adminRepository = adminRepository
+        this.bookingRepository = bookingRepository
         this.hashingService = hashingService
         this.jwtService = jwtService
         this.otpService = otpService
@@ -82,7 +85,6 @@ export default class adminUseCase implements IadminUseCase {
                 return "unblocked successfully";
             }
         } catch (error) {
-            console.log(error)
             return null
         }
     }
@@ -93,7 +95,6 @@ export default class adminUseCase implements IadminUseCase {
             const totalPages = Math.ceil(totalCount / limit)
             return { owners, totalPages }
         } catch (error) {
-            console.log(error)
             return { owners: [], totalPages: 0 }
         }
     }
@@ -107,7 +108,6 @@ export default class adminUseCase implements IadminUseCase {
                 return "unblocked successfully";
             }
         } catch (error) {
-            console.log(error);
             return null
         }
     }
@@ -140,6 +140,51 @@ export default class adminUseCase implements IadminUseCase {
         try {
             const response = await this.adminRepository.workspaceDetails(workspaceId)
             return response
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async getAdminRevenue(filter: any) {
+        try {
+            const totalRevenue = await this.bookingRepository.getServiceFeeSum();
+            let filteredRevenue;
+            if (filter) {
+                const now = new Date();
+                let startDate, endDate;
+
+                switch (filter.toLowerCase()) {
+                    case 'daily':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+                        break;
+                    case 'weekly':
+                        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        endDate = now;
+                        break;
+                    case 'monthly':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                        break;
+                    case 'yearly':
+                        startDate = new Date(now.getFullYear(), 0, 1);
+                        endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+                        break;
+                    default:
+                        filteredRevenue = totalRevenue; 
+                        break;
+                }
+
+                if (startDate && endDate) {
+                    filteredRevenue = await this.bookingRepository.getServiceFeeSum(startDate, endDate);
+                } else {
+                    filteredRevenue = totalRevenue;
+                }
+            } else {
+                filteredRevenue = totalRevenue; 
+            }
+
+            return { totalRevenue, filteredRevenue };
         } catch (error) {
             throw error
         }

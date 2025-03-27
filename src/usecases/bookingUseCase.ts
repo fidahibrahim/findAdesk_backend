@@ -1,12 +1,14 @@
+import { IBooking } from "../entities/bookingEntity";
 import { IBookingRepository } from "../interface/Repository/bookingRepository";
 import { IuserRepository } from "../interface/Repository/userRepository";
 import { IWorkspaceRepository } from "../interface/Repository/workspaceRepository";
-import { IBookingUseCase, AvailabilityRequest, CreateBookingData } from "../interface/Usecase/IBookingUseCase";
+import { IBookingUseCase, AvailabilityRequest, CreateBookingData, bookingDetails } from "../interface/Usecase/IBookingUseCase";
 
 export default class bookingUseCase implements IBookingUseCase {
     private bookingRepository: IBookingRepository;
     private workspaceRepository: IWorkspaceRepository;
     private userRepository: IuserRepository;
+
     constructor(
         bookingRepository: IBookingRepository,
         workspaceRepository: IWorkspaceRepository,
@@ -67,27 +69,79 @@ export default class bookingUseCase implements IBookingUseCase {
             throw error
         }
     }
-    async createBooking(data: CreateBookingData) {
+    // async createBooking(data: CreateBookingData) {
+    //     try {
+    //         const bookingId = `BOOK-${Date.now()}`;
+    //         const booking = {
+    //             ...data,
+    //             bookingId
+    //         }
+    //         if (data.mobile) {
+    //             const userId = data.userId.toString();
+    //             await this.userRepository.updateUserMobile(userId, data.mobile)
+    //         }
+    //         const response = await this.bookingRepository.createBooking(booking)
+    //         return response
+    //     } catch (error) {
+    //         throw error
+    //     }
+    // }
+
+    async createBooking(
+        userId: string,
+        workspaceId: string,
+        bookingId: string,
+        pricePerHour: number,
+        bookingDetails: bookingDetails
+    ) {
         try {
-            const bookingId = `BOOK-${Date.now()}`;
             const booking = {
-                ...data,
-                bookingId
-            }
-            if (data.mobile) {
-                const userId = data.userId.toString();
-                await this.userRepository.updateUserMobile(userId, data.mobile)
-            }
-            const response = await this.bookingRepository.createBooking(booking)
-            return response
+                userId,
+                workspaceId,
+                bookingId,
+                pricePerHour,
+                bookingDetails,
+            };
+            const response = await this.bookingRepository.createBooking(booking);
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    }
+    async getBookingDetails(bookingId: string) {
+        console.log("inside useCase", bookingId);
+    
+        try {
+          const response = await this.bookingRepository.getBookingDetails(
+            bookingId
+          );
+          return response;
+        } catch (error) {
+          throw error;
+        }
+      }
+    async findProductName(workspaceId: string) {
+        try {
+            const workspace = await this.workspaceRepository.findWorkspace(workspaceId)
+            return workspace?.workspaceName
         } catch (error) {
             throw error
         }
     }
-    async findProductName (workspaceId: string) {
+    async listBookings(ownerId: string, search: string, page: number, limit: number) {
         try {
-            const workspace = await this.workspaceRepository.findWorkspace(workspaceId)
-            return workspace?.workspaceName
+            const { bookings, totalCount } = await this.bookingRepository.listBookings(ownerId, search, page, limit)
+            const totalPages = Math.ceil(totalCount / limit)
+            return { bookings, totalPages }
+        } catch (error) {
+            throw error
+        }
+    }
+    async bookingViewDetails(bookingId: string) {
+        try {
+            const response = await this.bookingRepository.bookingViewDetails(bookingId)
+            console.log(response, 'response in usecase')
+            return response
         } catch (error) {
             throw error
         }

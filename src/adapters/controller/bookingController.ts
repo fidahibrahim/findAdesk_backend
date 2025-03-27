@@ -4,6 +4,9 @@ import { HttpStatusCode } from "../../constants/httpStatusCode";
 import { handleError, handleSuccess } from "../../infrastructure/utils/responseHandler";
 import { ResponseMessage } from "../../constants/responseMssg";
 import Stripe from "stripe";
+import { AuthenticatedRequestUser } from "../../infrastructure/middleware/userAuth";
+import { generateId } from "../../infrastructure/utils/bookingIdGenerator";
+import { AuthenticatedRequest } from "../../infrastructure/middleware/ownerAuth";
 
 export class bookingController {
     private bookingUseCase: IBookingUseCase
@@ -11,8 +14,11 @@ export class bookingController {
         this.bookingUseCase = bookingUseCase
         this.checkAvailability = this.checkAvailability.bind(this)
         this.createBooking = this.createBooking.bind(this)
+        this.getBookingDetails = this.getBookingDetails.bind(this)
         this.createStripeSession = this.createStripeSession.bind(this)
         this.stripeWebhook = this.stripeWebhook.bind(this)
+        this.listBookings = this.listBookings.bind(this)
+        this.getBookingDetailsOwner = this.getBookingDetailsOwner.bind(this)
     }
     async checkAvailability(req: Request, res: Response) {
         try {
@@ -35,75 +41,133 @@ export class bookingController {
                 .json(handleError(ResponseMessage.AVAILABILITY_CHECK_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-    async createBooking(req: Request, res: Response) {
+    // async createBooking(req: Request, res: Response) {
+    //     try {
+    //         const { userId, workspaceId, bookingDetails, mobile, specialRequests, total } = req.body;
+
+    //         await this.bookingUseCase.createBooking({
+    //             userId,
+    //             workspaceId,
+    //             date: new Date(bookingDetails.date),
+    //             startTime: new Date(`${bookingDetails.date}T${bookingDetails.startTime}:00`),
+    //             endTime: new Date(`${bookingDetails.date}T${bookingDetails.endTime}:00`),
+    //             mobile,
+    //             seats: bookingDetails.seats,
+    //             concern: specialRequests,
+    //             total,
+    //             status: "pending",
+    //         });
+    //         res.status(HttpStatusCode.OK)
+    //             .json(handleSuccess(ResponseMessage.BOOKING_CONFIRMATION, HttpStatusCode.OK))
+
+    //     } catch (error) {
+    //         res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+    //             .json(handleError(ResponseMessage.BOOKING_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+    //     }
+    // }
+    async createBooking(req: AuthenticatedRequestUser, res: Response) {
         try {
-            console.log(req.body, "req body in my controller")
-            const { userId, workspaceId, bookingDetails, mobile, specialRequests, total } = req.body;
+            const { workspaceId, bookingDetails, pricePerHour } = req.body;
+            console.log(typeof pricePerHour);
 
-            await this.bookingUseCase.createBooking({
-                userId,
+            const userId = req.user?.userId;
+            const bookingId = generateId();
+
+            const response = await this.bookingUseCase.createBooking(
+                userId ?? "",
                 workspaceId,
-                date: new Date(bookingDetails.date),
-                startTime: new Date(`${bookingDetails.date}T${bookingDetails.startTime}:00`),
-                endTime: new Date(`${bookingDetails.date}T${bookingDetails.endTime}:00`),
-                mobile,
-                seats: bookingDetails.seats,
-                concern: specialRequests,
-                total,
-                status: "pending",
-            });
-            res.status(HttpStatusCode.OK)
-                .json(handleSuccess(ResponseMessage.BOOKING_CONFIRMATION, HttpStatusCode.OK))
-
+                bookingId,
+                pricePerHour,
+                bookingDetails
+            );
+            res
+                .status(HttpStatusCode.OK)
+                .json(
+                    handleSuccess(
+                        ResponseMessage.BOOKING_CONFIRMATION,
+                        HttpStatusCode.OK,
+                        response
+                    )
+                );
         } catch (error) {
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-                .json(handleError(ResponseMessage.BOOKING_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+            res
+                .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(
+                    handleError(
+                        ResponseMessage.BOOKING_FAILURE,
+                        HttpStatusCode.INTERNAL_SERVER_ERROR
+                    )
+                );
         }
     }
     async createStripeSession(req: Request, res: Response) {
         try {
-            const { payload } = req.body
-            const workspaceId = payload.workspaceId
-            const workspaceName = await this.bookingUseCase.findProductName(workspaceId)
+            const { payload } = req.body;
+            console.log("my payload", payload);
+
+            const workspaceId = payload.workspace.workspaceId;
+            const workspaceName = await this.bookingUseCase.findProductName(
+                workspaceId
+            );
             if (!process.env.STRIPE_SECRET_KEY) {
-                throw new Error("STRIPE_SECRET_KEY is not defined in environment variables");
+                throw new Error(
+                    "STRIPE_SECRET_KEY is not defined in environment variables"
+                );
             }
-            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
             const session = await stripe.checkout.sessions.create({
                 line_items: [
                     {
                         price_data: {
-                            currency: 'inr',
+                            currency: "inr",
                             product_data: {
-                                name: workspaceName ?? 'workspaceName',
+                                name: workspaceName ?? "workspaceName",
                             },
-                            unit_amount: payload.total * 100,
+                            unit_amount: payload.grandTotal * 100,
                         },
                         quantity: 1,
                     },
                 ],
-                mode: 'payment',
-                success_url: 'http://localhost:5000/bookingConfirmation',
-                cancel_url: 'http://localhost:5000/checkout',
-
+                mode: "payment",
+                metadata: {
+                    bookingId: payload.bookingId,
+                    paymentMethod: payload.paymentMethod,
+                    mobile: payload.phoneNumber,
+                },
+                success_url: "http://localhost:5000/bookingConfirmation",
+                cancel_url: `http://localhost:5000/checkout/${payload.bookingId}`,
             });
-            res.status(HttpStatusCode.OK)
-                .json(handleSuccess(ResponseMessage.BOOKING_CONFIRMATION, HttpStatusCode.OK, session))
-
+            res
+                .status(HttpStatusCode.OK)
+                .json(
+                    handleSuccess(
+                        ResponseMessage.BOOKING_CONFIRMATION,
+                        HttpStatusCode.OK,
+                        session
+                    )
+                );
         } catch (error) {
-            console.log(error)
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-                .json(handleError(ResponseMessage.BOOKING_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+            console.log(error);
+            res
+                .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(
+                    handleError(
+                        ResponseMessage.BOOKING_FAILURE,
+                        HttpStatusCode.INTERNAL_SERVER_ERROR
+                    )
+                );
         }
     }
     async stripeWebhook(req: Request, res: Response) {
         try {
+            console.log('coming to controller')
             const sig = req.headers["stripe-signature"];
             const event = Stripe.webhooks.constructEvent(
                 req.body,
                 sig as string,
                 process.env.WEBHOOK_SECRET_KEY!
             );
+            console.log(event,'event')
             if (event.type === "checkout.session.completed") {
                 const session = event.data.object;
                 console.log("session", session);
@@ -115,6 +179,68 @@ export class bookingController {
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.BOOKING_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+    async getBookingDetails(req: Request, res: Response) {
+        try {
+            const bookingId = req.query.bookingId as string;
+            console.log("bookingId inside controller", bookingId);
+
+            const response = await this.bookingUseCase.getBookingDetails(bookingId);
+            console.log("response", response);
+            res
+                .status(HttpStatusCode.OK)
+                .json(
+                    handleSuccess(
+                        ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS,
+                        HttpStatusCode.OK,
+                        response
+                    )
+                );
+        } catch (error) {
+            console.log(error);
+
+            res
+                .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(
+                    handleError(
+                        ResponseMessage.FETCH_PROFILE_FAILURE,
+                        HttpStatusCode.INTERNAL_SERVER_ERROR
+                    )
+                );
+        }
+    }
+
+    async listBookings(req: AuthenticatedRequest, res: Response) {
+        try {
+            const search = req.query.search?.toString() || ''
+            const page = parseInt(req.query.page as string, 10) || 1
+            const limit = 6
+            const ownerId = req.owner?.userId
+            if (!ownerId) {
+                throw new Error("Owner ID is required")
+            }
+            const { bookings, totalPages } = await this.bookingUseCase.listBookings(ownerId, search, page, limit)
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.BOOKING_LISTING_SUCCESS, HttpStatusCode.OK, { bookings, totalPages }));
+            return
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.BOOKING_LISTING_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+    async getBookingDetailsOwner(req: Request, res: Response) {
+        try {
+            const bookingId = req.query.bookingId as string
+            const response = await this.bookingUseCase.bookingViewDetails(bookingId)
+            console.log(response, 'response in controller')
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS, HttpStatusCode.OK, response));
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.BOOKING_VIEWDETAILS_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 }

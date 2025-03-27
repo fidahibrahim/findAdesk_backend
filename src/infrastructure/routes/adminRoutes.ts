@@ -9,14 +9,18 @@ import HashingService from "../utils/HashingService"
 import otpService from "../utils/otpService"
 import adminAuth from "../middleware/adminAuth"
 import workspaceModel from "../model/workspaceSchema"
+import bookingRepository from "../../adapters/repository/bookingRepository"
+import bookingModel from "../model/bookingSchema"
 
 const JwtService = new JwtToken()
 const HashingServiceInstance = new HashingService()
 const OtpService = new otpService()
 const AdminRepository = new adminRepository(user, user, ownerModel, workspaceModel)
+const BookingRepository = new bookingRepository(bookingModel, workspaceModel)
 
 const AdminUseCaseInstance = new adminUseCase(
     AdminRepository,
+    BookingRepository,
     HashingServiceInstance,
     JwtService,
     OtpService
@@ -40,5 +44,6 @@ adminRouter.patch("/blockOwner", adminAuth, AdminController.blockOwner)
 adminRouter.get("/getWorkspaces", adminAuth, AdminController.getWorkspaces)
 adminRouter.get('/workspaceDetails', adminAuth, AdminController.viewWorkspaceDetails)
 adminRouter.put("/updateStatus", adminAuth, AdminController.updateStatus)
+adminRouter.get('/adminRevenue', adminAuth, AdminController.getAdminRevenue)
 
 export default adminRouter

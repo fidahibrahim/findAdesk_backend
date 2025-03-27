@@ -32,6 +32,8 @@ export enum ResponseMessage {
     FETCH_WORKSPACE_FAILURE = "Failed to fetch workspace",
     UPDATE_WORKSPACE_STATUS_SUCCESS = "Status Updated Successfully",
     UPDATE_WORKSPACE_STATUS_FAILURE = "Failed to update status",
+    REVENUE_FETCHED_SUCCESSFULLY = 'Successfully fetched your revenue',
+    REVENUE_FETCHED_FAILED = 'Failed to fetch revenue',
   
     //user
     USER_NOT_FOUND = "User not found",
@@ -72,7 +74,9 @@ export enum ResponseMessage {
     AVAILABILITY_CHECK_FAILURE = "Availability check failed!",
     BOOKING_CONFIRMATION = "Your booking has been confirmed",
     BOOKING_FAILURE = "Your booking has been failed",
-    
-
+    BOOKING_LISTING_SUCCESS = "Bookings fetched successfully",
+    BOOKING_LISTING_FAILURE = "Failed to fetch bookings",
+    BOOKING_VIEWDETAILS_SUCCESS = "Booking details fetched successfully",
+    BOOKING_VIEWDETAILS_FAILURE = "Failed to fetch booking details"
   }
   

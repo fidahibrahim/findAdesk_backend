@@ -19,6 +19,8 @@ export class adminController implements IAdminController {
         this.getWorkspaces = this.getWorkspaces.bind(this)
         this.updateStatus = this.updateStatus.bind(this)
         this.viewWorkspaceDetails = this.viewWorkspaceDetails.bind(this)
+        this.getAdminRevenue = this.getAdminRevenue.bind(this)
+        
     }
 
     async login(req: Request, res: Response) {
@@ -153,6 +155,26 @@ export class adminController implements IAdminController {
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.WORKSPACE_VIEW_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+    async getAdminRevenue(req: Request, res: Response) {
+        try {
+            const filter = req.query.filter
+            console.log(filter,'filter in controller')
+            const { totalRevenue, filteredRevenue } = await this.adminUsecase.getAdminRevenue(filter)
+            console.log(totalRevenue,"total revenue in controller")
+            console.log(filteredRevenue,'filtered revenue in controller')
+            const response = {
+                totalRevenue: Number(totalRevenue.toFixed(2)),
+                filteredRevenue: Number(filteredRevenue.toFixed(2))
+            }
+            console.log(response)
+            res.status(HttpStatusCode.OK)
+                    .json(handleSuccess(ResponseMessage.REVENUE_FETCHED_SUCCESSFULLY, HttpStatusCode.OK, response ));
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.REVENUE_FETCHED_FAILED, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 }

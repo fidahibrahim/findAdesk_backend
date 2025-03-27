@@ -1,13 +1,13 @@
 import { ObjectId } from "mongoose";
-import { IBooking } from "../../entities/bookingEntity";
+import { checkoutBookingDetails, IBooking } from "../../entities/bookingEntity";
 
 export interface AvailabilityRequest {
     workspaceId: string;
-    date: string; 
-    startTime: string; 
-    endTime: string; 
+    date: string;
+    startTime: string;
+    endTime: string;
     seats: number;
-    day: string; 
+    day: string;
 }
 interface AvailabilityResponse {
     isAvailable: boolean;
@@ -26,8 +26,25 @@ export interface CreateBookingData {
     status: "pending" | "completed" | "cancelled";
 }
 
+export interface bookingDetails {
+    date: string;
+    startTime: string;
+    endTime: string;
+    seats: string;
+    day: string;
+}
+
 export interface IBookingUseCase {
     checkAvailability(data: AvailabilityRequest): Promise<AvailabilityResponse>
-    createBooking(data: CreateBookingData): Promise<IBooking>
-    findProductName (workspaceId: string): Promise<string|undefined>
+    createBooking(
+        userId: string,
+        workspaceId: string,
+        bookingId: string,
+        pricePerHour: number,
+        bookingDetails: bookingDetails
+    ): Promise<IBooking>;
+    getBookingDetails(bookingId: string): Promise<checkoutBookingDetails[]>;
+    findProductName(workspaceId: string): Promise<string | undefined>
+    listBookings(ownerId: string, search: string, page: number, limit: number): Promise<{ bookings: IBooking[] | null; totalPages: number }>
+    bookingViewDetails(bookingId: string): Promise<IBooking | null>
 }

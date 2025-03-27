@@ -24,7 +24,7 @@ const otpService = new OtpService()
 const jwtService = new JwtToken()
 
 const UserRepository = new userRepository(users, OtpSchema, workspaceModel)
-const BookingRepository = new bookingRepository(bookingModel)
+const BookingRepository = new bookingRepository(bookingModel, workspaceModel)
 const WorkspaceRepository = new workspaceRepository(workspaceModel)
 
 
@@ -63,8 +63,9 @@ userRouter.get('/recents', userController.getRecentWorkspaces)
 userRouter.post('/searchWorkspaces', authenticateUser, userController.filterWorkspaces)
 userRouter.get('/workspaceDetails', authenticateUser, userController.workspaceDetails)
 userRouter.post('/checkAvailability', authenticateUser, BookingController.checkAvailability)
+userRouter.post('/pendingBookings', authenticateUser, BookingController.createBooking)
+userRouter.get( "/bookings/details", authenticateUser, BookingController.getBookingDetails)
 userRouter.post('/bookings/createStripeSession', BookingController.createStripeSession)
-userRouter.post('/bookings', authenticateUser, BookingController.createBooking)
 userRouter.post('/webhook', express.raw({ type: "application/json" }), BookingController.stripeWebhook)
 
 export default userRouter

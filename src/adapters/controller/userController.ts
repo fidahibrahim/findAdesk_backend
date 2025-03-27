@@ -1,6 +1,6 @@
 import { HttpStatusCode } from "../../constants/httpStatusCode";
 import { ResponseMessage } from "../../constants/responseMssg";
-import { AuthenticatedRequest } from "../../infrastructure/middleware/userAuth";
+import { AuthenticatedRequestUser } from "../../infrastructure/middleware/userAuth";
 import { handleError, handleSuccess } from "../../infrastructure/utils/responseHandler";
 import { IuserUseCase } from "../../interface/Usecase/IUserUseCase";
 import { Request, Response } from "express"
@@ -192,7 +192,7 @@ export class UserController {
                 .json(handleError(ResponseMessage.FAILED_SENDING_MAIL, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-    async getProfile(req: AuthenticatedRequest, res: Response) {
+    async getProfile(req: AuthenticatedRequestUser, res: Response) {
         try {
             const userId = req.user?.userId
             const response = await this.userUseCase.getProfile(userId)
@@ -224,7 +224,7 @@ export class UserController {
                 .json(handleError(ResponseMessage.UPDATE_PROFILE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-    async resetPassword(req: AuthenticatedRequest, res: Response) {
+    async resetPassword(req: AuthenticatedRequestUser, res: Response) {
         try {
             const userId = req.user?.userId
             const { currentPassword, newPassword } = req.body

@@ -5,11 +5,11 @@ import userModel from '../model/userSchema';
 interface UserPayload extends JwtPayload {
     userId: string;
 }
-export interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequestUser extends Request {
     user?: UserPayload;
 }
 
-const authenticateUser = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+const authenticateUser = async (req: AuthenticatedRequestUser, res: Response, next: NextFunction): Promise<void> => {
     const token = req.cookies?.userToken;
     if (!token) {
         res.status(401).json({ message: 'Unauthorized' });

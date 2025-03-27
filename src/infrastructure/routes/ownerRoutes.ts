@@ -13,6 +13,12 @@ import workspaceRepository from "../../adapters/repository/workspaceRepository"
 import workspaceUseCase from "../../usecases/workspaceUseCase"
 import workspaceModel from "../model/workspaceSchema"
 import ownerAuth from "../middleware/ownerAuth"
+import bookingRepository from "../../adapters/repository/bookingRepository"
+import bookingModel from "../model/bookingSchema"
+import bookingUseCase from "../../usecases/bookingUseCase"
+import userRepository from "../../adapters/repository/userRepository"
+import userModel from "../model/userSchema"
+import { bookingController } from "../../adapters/controller/bookingController"
 
 const ownerRouter: Router = express.Router()
 const upload = multer()
@@ -22,20 +28,29 @@ const otpService = new OtpService()
 const jwtService = new JwtService()
 
 const OwnerRepository = new ownerRepository(ownerModel, OtpModel)
+const BookingRepository = new bookingRepository(bookingModel, workspaceModel)
+const UserRepository = new userRepository(userModel, OtpModel, workspaceModel)
+const WorkspaceRepository = new workspaceRepository(workspaceModel)
+
 const OwnerUseCase = new ownerUseCase(
     OwnerRepository,
     hashingService,
     otpService,
     jwtService
 )
-const OwnerController = new ownerController(OwnerUseCase)
-const WorkspaceRepository = new workspaceRepository(workspaceModel)
 const WorkspaceUseCase = new workspaceUseCase(
     WorkspaceRepository,
     OwnerRepository
-
 )
+const BookingUseCase = new bookingUseCase(
+    BookingRepository,
+    WorkspaceRepository,
+    UserRepository,
+)
+
+const OwnerController = new ownerController(OwnerUseCase)
 const WorkspaceController = new workspaceController(WorkspaceUseCase)
+const BookingController = new bookingController(BookingUseCase)
 
 ownerRouter.post('/register', OwnerController.register)
 ownerRouter.post('/verifyOtp', OwnerController.verifyOtp)
@@ -45,10 +60,15 @@ ownerRouter.post('/logout', OwnerController.logout)
 
 // workspace management 
 
-ownerRouter.get('/listWorkspaces', ownerAuth,  WorkspaceController.listWorkspaces)
+ownerRouter.get('/listWorkspaces', ownerAuth, WorkspaceController.listWorkspaces)
 ownerRouter.post('/addWorkspace', ownerAuth, upload.array('images'), WorkspaceController.addWorkspace)
 ownerRouter.get("/viewDetails", ownerAuth, WorkspaceController.workspaceDetails)
 ownerRouter.delete('/deleteWorkspace', ownerAuth, WorkspaceController.deleteWorkspace)
 ownerRouter.put('/editWorkspace', ownerAuth, upload.array('images'), WorkspaceController.editWorkspace)
+
+// booking management
+
+ownerRouter.get('/listBookings', ownerAuth, BookingController.listBookings)
+ownerRouter.get('/bookingViewDetails', ownerAuth, BookingController.getBookingDetailsOwner)
 
 export default ownerRouter
