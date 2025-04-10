@@ -1,10 +1,11 @@
 
-import { Schema, Types, model } from 'mongoose';
+import mongoose, { Schema, Types, model } from 'mongoose';
+import { IReview } from '../../entities/reviewEntity';
 
 const RatingSchema = new Schema(
   {
     userId: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
@@ -27,13 +28,18 @@ const RatingSchema = new Schema(
   { _id: false }
 );
 
-const reviewSchema = new Schema(
+const reviewSchema = new Schema<IReview>(
   {
     workspaceId: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Workspace',
       required: true,
       unique: true,
+    },
+    bookingId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Booking',
+      required: true
     },
     ratings: [RatingSchema],
   },
@@ -42,4 +48,5 @@ const reviewSchema = new Schema(
   }
 );
 
-export const WorkspaceReview = model('WorkspaceReview', reviewSchema);
+const reviewModel = mongoose.model<IReview>('Review', reviewSchema);
+export default reviewModel

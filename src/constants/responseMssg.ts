@@ -79,6 +79,12 @@ export enum ResponseMessage {
     BOOKING_LISTING_SUCCESS = "Bookings fetched successfully",
     BOOKING_LISTING_FAILURE = "Failed to fetch bookings",
     BOOKING_VIEWDETAILS_SUCCESS = "Booking details fetched successfully",
-    BOOKING_VIEWDETAILS_FAILURE = "Failed to fetch booking details"
+    BOOKING_VIEWDETAILS_FAILURE = "Failed to fetch booking details",
+
+    //Review
+    ADD_REVIEW_SUCCESS = 'Review submitted successfully!',
+    ADD_REVIEW_FAILURE = 'Failed to add your review',
+    GET_REVIEW_SUCCESS = 'Reviews fetched successfully',
+    GET_REVIEW_FAILURE = 'Failed to fetch reviews',
   }
   

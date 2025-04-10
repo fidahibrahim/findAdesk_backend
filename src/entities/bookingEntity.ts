@@ -15,12 +15,13 @@ export interface IBooking {
     additionalSeatsAmount?: number;
     serviceFee?: number;
     day?: string;
-    seats: string;
+    seats: number;
     pricePerHour: number;
     subTotal: number;
     total: number;
     grandTotal: number;
-    status?: "pending" | "completed" | "cancelled"
+    status?: "pending" | "completed" | "cancelled";
+    paymentMethod?: string;
 }
 
 export interface ICreateBooking {
@@ -59,3 +60,5 @@ export interface checkoutBookingDetails {
       images: string;
     };
   }
+
+ 

@@ -1,5 +1,6 @@
 import { IBooking } from "../entities/bookingEntity";
 import { IBookingRepository } from "../interface/Repository/bookingRepository";
+import { IReviewRepository } from "../interface/Repository/reviewRepository";
 import { IuserRepository } from "../interface/Repository/userRepository";
 import { IWorkspaceRepository } from "../interface/Repository/workspaceRepository";
 import { IBookingUseCase, AvailabilityRequest, CreateBookingData, bookingDetails } from "../interface/Usecase/IBookingUseCase";
@@ -8,15 +9,18 @@ export default class bookingUseCase implements IBookingUseCase {
     private bookingRepository: IBookingRepository;
     private workspaceRepository: IWorkspaceRepository;
     private userRepository: IuserRepository;
+    private reviewRepository: IReviewRepository;
 
     constructor(
         bookingRepository: IBookingRepository,
         workspaceRepository: IWorkspaceRepository,
-        userRepository: IuserRepository
+        userRepository: IuserRepository,
+        reviewRepository: IReviewRepository
     ) {
         this.bookingRepository = bookingRepository
         this.workspaceRepository = workspaceRepository
         this.userRepository = userRepository
+        this.reviewRepository = reviewRepository
     }
 
     async checkAvailability(data: AvailabilityRequest) {
@@ -69,24 +73,6 @@ export default class bookingUseCase implements IBookingUseCase {
             throw error
         }
     }
-    // async createBooking(data: CreateBookingData) {
-    //     try {
-    //         const bookingId = `BOOK-${Date.now()}`;
-    //         const booking = {
-    //             ...data,
-    //             bookingId
-    //         }
-    //         if (data.mobile) {
-    //             const userId = data.userId.toString();
-    //             await this.userRepository.updateUserMobile(userId, data.mobile)
-    //         }
-    //         const response = await this.bookingRepository.createBooking(booking)
-    //         return response
-    //     } catch (error) {
-    //         throw error
-    //     }
-    // }
-
     async createBooking(
         userId: string,
         workspaceId: string,
@@ -109,17 +95,15 @@ export default class bookingUseCase implements IBookingUseCase {
         }
     }
     async getBookingDetails(bookingId: string) {
-        console.log("inside useCase", bookingId);
-    
         try {
-          const response = await this.bookingRepository.getBookingDetails(
-            bookingId
-          );
-          return response;
+            const response = await this.bookingRepository.getBookingDetails(
+                bookingId
+            );
+            return response;
         } catch (error) {
-          throw error;
+            throw error;
         }
-      }
+    }
     async findProductName(workspaceId: string) {
         try {
             const workspace = await this.workspaceRepository.findWorkspace(workspaceId)
@@ -139,7 +123,12 @@ export default class bookingUseCase implements IBookingUseCase {
     }
     async bookingViewDetails(bookingId: string) {
         try {
-            const response = await this.bookingRepository.bookingViewDetails(bookingId)
+            const booking = await this.bookingRepository.bookingViewDetails(bookingId)
+            const review = await this.reviewRepository.findByBookingId(bookingId)
+            const response = {
+                ...booking,
+                ratings: review?.ratings || []
+            };
             return response
         } catch (error) {
             throw error
@@ -153,13 +142,25 @@ export default class bookingUseCase implements IBookingUseCase {
             throw error
         }
     }
-    async updateBookingStatus(bookingId: string, status: string) {
+    async updateBookingStatus(
+        bookingId: string,
+        status: string,
+        seat: number,
+        paymentMethod: string,
+        worksapceId: string
+    ) {
         try {
-            const response = await this.bookingRepository.updateBookingStatus(bookingId, status)
-            return response
+            const response = await this.bookingRepository.updateBookingStatus(
+                bookingId,
+                status,
+                seat,
+                paymentMethod,
+                worksapceId
+            );
+            return response;
         } catch (error) {
-            console.log(error)
-            throw error
+            console.log(error);
+            throw error;
         }
     }
 }

@@ -46,7 +46,13 @@ export interface IBookingUseCase {
     getBookingDetails(bookingId: string): Promise<checkoutBookingDetails[]>;
     findProductName(workspaceId: string): Promise<string | undefined>
     listBookings(ownerId: string, search: string, page: number, limit: number): Promise<{ bookings: IBooking[] | null; totalPages: number }>
-    bookingViewDetails(bookingId: string): Promise<IBooking | null>
+    bookingViewDetails(bookingId: string): Promise<any>
     bookingConfirmDetails(bookingId: string): Promise<any>
-    updateBookingStatus(bookingId: string, status: string): Promise<any>
+    updateBookingStatus(
+        bookingId: string,
+        status: string,
+        seat: number,
+        paymentMethod: string,
+        worksapceId: string
+    ): Promise<any>;
 }

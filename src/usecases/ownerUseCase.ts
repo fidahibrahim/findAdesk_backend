@@ -80,7 +80,6 @@ export default class ownerUseCase implements IOwnerUseCase {
             }
             return "Invalid Mail"
         } catch (error) {
-            console.log(error);
             return null
         }
     }

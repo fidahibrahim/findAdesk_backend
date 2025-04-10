@@ -16,6 +16,10 @@ import bookingUseCase from '../../usecases/bookingUseCase'
 import { bookingController } from '../../adapters/controller/bookingController'
 import workspaceRepository from '../../adapters/repository/workspaceRepository'
 import SavedWorkspace from '../model/savedWorkspaceSchema'
+import reviewRepository from '../../adapters/repository/reviewRepository'
+import reviewUseCase from '../../usecases/reviewUseCase'
+import { reviewController } from '../../adapters/controller/reviewController'
+import reviewModel from '../model/reviewSchema'
 
 const userRouter: Router = express.Router()
 const upload = multer()
@@ -24,9 +28,10 @@ const hashingService = new HashingService()
 const otpService = new OtpService()
 const jwtService = new JwtToken()
 
-const UserRepository = new userRepository(users, OtpSchema, workspaceModel, SavedWorkspace, )
-const BookingRepository = new bookingRepository(bookingModel, workspaceModel, SavedWorkspace)
+const UserRepository = new userRepository(users, OtpSchema, workspaceModel, SavedWorkspace, reviewModel)
+const BookingRepository = new bookingRepository(bookingModel, workspaceModel, SavedWorkspace, reviewModel)
 const WorkspaceRepository = new workspaceRepository(workspaceModel, SavedWorkspace)
+const ReviewRepository = new reviewRepository(reviewModel, bookingModel)
 
 
 const UserUseCase = new userUseCase(
@@ -40,12 +45,16 @@ const UserUseCase = new userUseCase(
 const BookingUseCase = new bookingUseCase(
     BookingRepository,
     WorkspaceRepository,
-    UserRepository
+    UserRepository,
+    ReviewRepository
+)
+const ReviewUseCase = new reviewUseCase(
+    ReviewRepository
 )
 
 const userController = new UserController(UserUseCase)
 const BookingController = new bookingController(BookingUseCase)
-
+const ReviewController = new reviewController(ReviewUseCase)
 
 // user authentication
 userRouter.post('/register', userController.register)
@@ -73,8 +82,11 @@ userRouter.get("/bookings/details", authenticateUser, BookingController.getBooki
 userRouter.post('/bookings/createStripeSession', BookingController.createStripeSession)
 userRouter.post('/webhook', express.raw({ type: "application/json" }), BookingController.stripeWebhook)
 userRouter.get('/bookingConfirmDetails', authenticateUser, BookingController.bookingConfirmDetails)
-
-
 userRouter.post('/saveWorkspace', authenticateUser, userController.saveWorkspace)
+
+//Review
+userRouter.post('/addReview', authenticateUser, ReviewController.addReview)
+userRouter.get('/getReviews', authenticateUser, ReviewController.getReviews)
+
 
 export default userRouter

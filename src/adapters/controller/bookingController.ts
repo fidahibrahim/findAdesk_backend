@@ -64,67 +64,96 @@ export class bookingController {
     }
     async createStripeSession(req: Request, res: Response) {
         try {
-            const { payload } = req.body;
-            const workspaceId = payload.workspace.workspaceId;
-            const workspaceName = await this.bookingUseCase.findProductName(
-                workspaceId
+          const { payload } = req.body;
+          const workspaceId =
+            payload.workspace?.workspaceId ?? payload.workspaceId?._id;
+          const workspaceName = await this.bookingUseCase.findProductName(
+            workspaceId
+          );
+          if (!process.env.STRIPE_SECRET_KEY) {
+            throw new Error(
+              "STRIPE_SECRET_KEY is not defined in environment variables"
             );
-            if (!process.env.STRIPE_SECRET_KEY) {
-                throw new Error(
-                    "STRIPE_SECRET_KEY is not defined in environment variables"
-                );
-            }
-            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-            const session = await stripe.checkout.sessions.create({
-                line_items: [
-                    {
-                        price_data: {
-                            currency: "inr",
-                            product_data: {
-                                name: workspaceName ?? "workspaceName",
-                            },
-                            unit_amount: payload.grandTotal * 100,
-                        },
-                        quantity: 1,
-                    },
-                ],
-                mode: "payment",
-                metadata: {
-                    bookingId: payload.bookingId,
-                    paymentMethod: payload.paymentMethod,
-                    mobile: payload.phoneNumber,
+          }
+          const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+          const session = await stripe.checkout.sessions.create({
+            line_items: [
+              {
+                price_data: {
+                  currency: "inr",
+                  product_data: {
+                    name: workspaceName ?? "workspaceName",
+                  },
+                  unit_amount: payload.grandTotal * 100,
                 },
-                success_url: `http://localhost:5000/bookingConfirmation/${payload.bookingId}`,
-                cancel_url: `http://localhost:5000/checkout/${payload.bookingId}`,
-            });
-            await this.bookingUseCase.updateBookingStatus(payload.bookingId, 'completed')
-            res.status(HttpStatusCode.OK)
-                .json(handleSuccess(ResponseMessage.BOOKING_CONFIRMATION, HttpStatusCode.OK, session));
-        } catch (error) {
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-                .json(handleError(ResponseMessage.BOOKING_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR));
-        }
-    }
-    async stripeWebhook(req: Request, res: Response) {
-        try {
-            const sig = req.headers["stripe-signature"];
-            const event = Stripe.webhooks.constructEvent(
-                req.body,
-                sig as string,
-                process.env.WEBHOOK_SECRET_KEY!
+                quantity: 1,
+              },
+            ],
+            mode: "payment",
+            metadata: {
+              bookingId: payload.bookingId,
+              paymentMethod: payload.paymentMethod,
+              mobile: payload.phoneNumber,
+              seat: payload.seats,
+              worksapceId: workspaceId,
+            },
+            success_url: `http://localhost:5000/bookingConfirmation/${payload.bookingId}`,
+            cancel_url: `http://localhost:5000/checkout/${payload.bookingId}`,
+          });
+          res
+            .status(HttpStatusCode.OK)
+            .json(
+              handleSuccess(
+                ResponseMessage.BOOKING_CONFIRMATION,
+                HttpStatusCode.OK,
+                session
+              )
             );
-            console.log(event, 'event')
-            if (event.type === "checkout.session.completed") {
-                const session = event.data.object;
-                console.log("session", session);
-            }
-            console.log("✅ Verified Stripe event:", event);
-            res.json({ received: true });
         } catch (error) {
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-                .json(handleError(ResponseMessage.BOOKING_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+          console.log('error: ', error);
+          res
+            .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+            .json(
+              handleError(
+                ResponseMessage.BOOKING_FAILURE,
+                HttpStatusCode.INTERNAL_SERVER_ERROR
+              )
+            );
         }
-    }
+      }
+      async stripeWebhook(req: Request, res: Response) {
+        try {
+          const sig = req.headers["stripe-signature"];
+          const event = Stripe.webhooks.constructEvent(
+            req.body,
+            sig as string,
+            process.env.WEBHOOK_SECRET_KEY!
+          );
+          if (event.type === "checkout.session.completed") {
+            const session = event.data.object;
+            console.log("session", session);
+            await this.bookingUseCase.updateBookingStatus(
+              session.metadata?.bookingId!,
+              "completed",
+              parseInt(session.metadata?.seat!),
+              session.metadata?.paymentMethod!,
+              session.metadata?.worksapceId!
+            );
+          }
+          res.json({ received: true });
+        } catch (error) {
+          console.error("Webhook handler failed:", error);
+    
+          res
+            .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+            .json(
+              handleError(
+                ResponseMessage.BOOKING_FAILURE,
+                HttpStatusCode.INTERNAL_SERVER_ERROR
+              )
+            );
+        }
+      }
 
     async getBookingDetails(req: Request, res: Response) {
         try {
@@ -183,6 +212,7 @@ export class bookingController {
         try {
             const bookingId = req.query.bookingId as string;
             const response = await this.bookingUseCase.bookingViewDetails(bookingId)
+            console.log()
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS, HttpStatusCode.OK, response));
         } catch (error) {

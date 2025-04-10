@@ -3,16 +3,19 @@ import { checkoutBookingDetails, IBooking, ICreateBooking } from "../../entities
 import { IBookingRepository } from "../../interface/Repository/bookingRepository";
 import { IWorkspace } from "../../entities/workspaceEntity";
 import { ISavedWorkspace } from "../../entities/savedWorkspaceEntity";
+import { IReview } from "../../entities/reviewEntity";
 
 export default class bookingRepository implements IBookingRepository {
   private booking: Model<IBooking>;
   private workspace: Model<IWorkspace>;
   private savedWorkspace: Model<ISavedWorkspace>;
+  private review: Model<IReview>
 
-  constructor(booking: Model<IBooking>, workspace: Model<IWorkspace>, savedWorkspace: Model<ISavedWorkspace>) {
+  constructor(booking: Model<IBooking>, workspace: Model<IWorkspace>, savedWorkspace: Model<ISavedWorkspace>, review: Model<IReview>) {
     this.booking = booking;
     this.workspace = workspace;
     this.savedWorkspace = savedWorkspace;
+    this.review = review;
   }
 
   async createBooking(booking: ICreateBooking) {
@@ -30,12 +33,10 @@ export default class bookingRepository implements IBookingRepository {
         `${booking.bookingDetails.date}T${booking.bookingDetails.endTime}:00Z`
       );
 
-      // Calculate total hours and round it
       const hours = Math.round(
         (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)
       );
 
-      // Calculate additional seats
       const additionalSeats = Math.max(
         parseInt(booking.bookingDetails.seats) - 1,
         0
@@ -69,7 +70,6 @@ export default class bookingRepository implements IBookingRepository {
       };
 
       const createdBooking = await this.booking.create(bookingDetails);
-      console.log("Booking created in repository");
       return createdBooking;
     } catch (error) {
       console.error("Error creating booking:", error);
@@ -78,8 +78,6 @@ export default class bookingRepository implements IBookingRepository {
   }
 
   async getBookingDetails(bookingId: string) {
-    console.log("bookingId shds", bookingId);
-
     try {
       const response = await this.booking.aggregate<checkoutBookingDetails>([
         {
@@ -200,12 +198,12 @@ export default class bookingRepository implements IBookingRepository {
             path: 'workspaceId',
             select: 'workspaceName workspaceMail spaceDescription place street state images'
           });
-          return savedWorkspaces.map(item => ({
-            _id: item._id,
-            userId: item.userId,
-            workspaceId: item.workspaceId,
-            status: 'saved',
-          }));
+        return savedWorkspaces.map(item => ({
+          _id: item._id,
+          userId: item.userId,
+          workspaceId: item.workspaceId,
+          status: 'saved',
+        }));
       }
       let query: any = { userId: userId }
       if (filter !== 'all') {
@@ -240,18 +238,40 @@ export default class bookingRepository implements IBookingRepository {
     }
   }
 
-  async updateBookingStatus(bookingId: string, status: string) {
+  async updateBookingStatus(
+    bookingId: string,
+    status: string,
+    seats: number,
+    paymentMethod: string,
+    worksapceId: string
+  ) {
     try {
-      return await this.booking.findOneAndUpdate(
+      const workspace = await this.workspace.findById(worksapceId);
+      if (!workspace) {
+        throw new Error("Workspace not found");
+      }
+
+      if (workspace.capacity ! < seats) {
+        throw new Error("Not enough capacity in the workspace");
+      }
+
+      workspace.remainingSeats! += seats;
+      
+      await workspace.save();
+
+      const updatedBooking = await this.booking.findOneAndUpdate(
         { bookingId: bookingId },
         {
           status: status,
-          updatedAt: new Date()
+          paymentMethod: paymentMethod,
+          updatedAt: new Date(),
         },
         {
           new: true,
         }
       );
+
+      return updatedBooking;
     } catch (error) {
       throw error;
     }

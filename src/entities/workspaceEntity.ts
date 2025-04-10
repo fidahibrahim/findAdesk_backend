@@ -5,6 +5,7 @@ export interface IWorkspace {
     workspaceMail: string;
     workspaceType: string;
     capacity: number;
+    remainingSeats?: number;
     place: string;
     street: string;
     state: string;

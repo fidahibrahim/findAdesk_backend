@@ -50,7 +50,7 @@ const bookingSchema = new Schema<IBooking>(
             type: String,
         },
         seats: {
-            type: String,
+            type: Number,
             required: true,
         },
         pricePerHour: {
@@ -69,6 +69,10 @@ const bookingSchema = new Schema<IBooking>(
         status: {
             type: String,
             required: true,
+        },
+        paymentMethod: {
+            type: String,
+            default: "",
         },
     },
     {

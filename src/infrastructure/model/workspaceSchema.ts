@@ -23,6 +23,10 @@ const workspaceSchema = new Schema ({
         type: Number,
         required: true
     },
+    remainingSeats: {
+        type: Number,
+        default: 0
+    },
     place: {
         type: String,
         required: true

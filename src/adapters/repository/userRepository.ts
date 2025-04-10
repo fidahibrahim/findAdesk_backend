@@ -6,23 +6,30 @@ import { IOtp } from "../../entities/otpEntity"
 import { GoogleProfileResponse, Ifilter } from "../../interface/Usecase/IUserUseCase";
 import { IWorkspace } from "../../entities/workspaceEntity";
 import { ISavedWorkspace } from "../../entities/savedWorkspaceEntity";
-
+import { IReview } from "../../entities/reviewEntity";
+interface RatingInfo {
+    averageRating: number;
+    totalRatings: number;
+}
 
 export default class userRepository implements IuserRepository {
     private user: Model<Iuser>
     private otp: Model<IOtp>
     private workspace: Model<IWorkspace>
     private savedWorkspace: Model<ISavedWorkspace>
+    private review: Model<IReview>
     constructor(
         user: Model<Iuser>,
         otp: Model<IOtp>,
         workspace: Model<IWorkspace>,
-        savedWorkspace: Model<ISavedWorkspace>
+        savedWorkspace: Model<ISavedWorkspace>,
+        review: Model<IReview>
     ) {
         this.user = user
         this.otp = otp
         this.workspace = workspace
         this.savedWorkspace = savedWorkspace
+        this.review = review
     }
     async createUser(data: IRegisterBody) {
         try {
@@ -95,7 +102,7 @@ export default class userRepository implements IuserRepository {
     }
     async changePassword(userId: string, password: string) {
         try {
-            return await this.user.findByIdAndUpdate(userId, {password: password}, { new: true })
+            return await this.user.findByIdAndUpdate(userId, { password: password }, { new: true })
         } catch (error) {
             throw error
         }
@@ -112,7 +119,7 @@ export default class userRepository implements IuserRepository {
         try {
             if (!data) throw new Error("Invalid user data");
             const updatedUser = await this.user.findOneAndUpdate(
-                {email: data.email},
+                { email: data.email },
                 {
                     $set: {
                         name: data.name,
@@ -139,7 +146,7 @@ export default class userRepository implements IuserRepository {
                 },
                 { new: true }
             )
-            console.log(updatedUser,"updatedUser in repo")
+            console.log(updatedUser, "updatedUser in repo")
             return updatedUser
         } catch (error) {
             throw error
@@ -147,11 +154,41 @@ export default class userRepository implements IuserRepository {
     }
     async getRecentWorkspaces() {
         try {
-            return await this.workspace
+            const workspaces = await this.workspace
                 .find()
                 .sort({ createdAt: -1 })
                 .limit(6)
                 .exec();
+
+            const workspaceIds = workspaces.map(workspace => workspace._id)
+            const reviews = await this.review.aggregate([
+                { $match: { workspaceId: { $in: workspaceIds } } },
+                { $unwind: '$ratings' },
+                {
+                    $group: {
+                        _id: '$workspaceId',
+                        averageRating: { $avg: "$ratings.rating" },
+                        totalRatings: { $sum: 1 }
+                    }
+                }
+            ])
+            const ratingsMap: Record<string, RatingInfo> = {};
+            reviews.forEach(review => {
+                ratingsMap[review._id.toString()] = {
+                    averageRating: parseFloat(review.averageRating.toFixed(1)),
+                    totalRatings: review.totalRatings
+                };
+            });
+
+            const workspacesWithRatings = workspaces.map(workspace => {
+                const workspaceId = workspace._id.toString();
+                return {
+                    ...workspace,
+                    rating: ratingsMap[workspaceId] ? ratingsMap[workspaceId].averageRating : 0,
+                    totalRatings: ratingsMap[workspaceId] ? ratingsMap[workspaceId].totalRatings : 0
+                };
+            });
+            return workspacesWithRatings;
         } catch (error) {
             throw error
         }
@@ -211,7 +248,7 @@ export default class userRepository implements IuserRepository {
             const workspace = await this.workspace.findById(workspaceId)
             const workspaceObject = workspace?.toObject() as IWorkspace;
             let isSaved = false;
-            if(userId) {
+            if (userId) {
                 const savedWorkspace = await this.savedWorkspace.findOne({ userId, workspaceId, isActive: true })
                 isSaved = !!savedWorkspace;
             }
