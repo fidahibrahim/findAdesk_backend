@@ -1,7 +1,7 @@
 import { HttpStatusCode } from "../../constants/httpStatusCode";
 import { ResponseMessage } from "../../constants/responseMssg";
 import { AuthenticatedRequestUser } from "../../infrastructure/middleware/userAuth";
-import { handleError, handleSuccess } from "../../infrastructure/utils/responseHandler";
+import { handleError, handleErrorr, handleSuccess, handleSuccesss, sendResponse } from "../../infrastructure/utils/responseHandler";
 import { IuserUseCase } from "../../interface/Usecase/IUserUseCase";
 import { Request, Response } from "express"
 
@@ -24,28 +24,23 @@ export class UserController {
         this.filterWorkspaces = this.filterWorkspaces.bind(this)
         this.workspaceDetails = this.workspaceDetails.bind(this)
         this.getBookingHistory = this.getBookingHistory.bind(this)
+        this.saveWorkspace = this.saveWorkspace.bind(this)
     }
     async register(req: Request, res: Response): Promise<void> {
         try {
             const { username: name, email, password } = req.body
             if (!name || !email || !password) {
-                res
-                    .status(HttpStatusCode.BAD_REQUEST)
+                res.status(HttpStatusCode.BAD_REQUEST)
                     .json(handleError(ResponseMessage.FIELDS_REQUIRED, HttpStatusCode.BAD_REQUEST))
                 return
             }
-            const data = {
-                name,
-                email,
-                password
-            }
+            const data = { name, email, password }
             const response = await this.userUseCase.register(data)
-            res
-                .status(HttpStatusCode.CREATED)
+            res.status(HttpStatusCode.CREATED)
                 .json(handleSuccess(ResponseMessage.USER_REGISTER_SUCCESS, HttpStatusCode.CREATED, response));
-
         } catch (error) {
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(handleError(ResponseMessage.USER_REGISTER_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.USER_REGISTER_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
     async verifyOtp(req: Request, res: Response) {
@@ -198,15 +193,12 @@ export class UserController {
             const userId = req.user?.userId
             const response = await this.userUseCase.getProfile(userId)
             if (response) {
-                res.status(HttpStatusCode.OK)
-                    .json(handleSuccess(ResponseMessage.FETCH_PROFILE, HttpStatusCode.OK, response))
+                sendResponse(res, handleSuccesss(ResponseMessage.FETCH_PROFILE, HttpStatusCode.OK, response));
             } else {
-                res.status(HttpStatusCode.NOT_FOUND)
-                    .json(handleError(ResponseMessage.AUTHENTICATION_FAILURE, HttpStatusCode.NOT_FOUND));
+                sendResponse(res, handleErrorr(ResponseMessage.AUTHENTICATION_FAILURE, HttpStatusCode.NOT_FOUND));
             }
         } catch (error) {
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-                .json(handleError(ResponseMessage.FETCH_PROFILE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+            sendResponse(res, handleErrorr(ResponseMessage.FETCH_PROFILE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR, error));
         }
     }
     async editProfile(req: Request, res: Response) {
@@ -237,11 +229,11 @@ export class UserController {
                 .json(handleError(ResponseMessage.PASSWORD_RESET_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-
     async getBookingHistory(req: AuthenticatedRequestUser, res: Response) {
         try {
             const userId = req.user?.userId
-            const response = await this.userUseCase.getBookingHistory(userId)
+            const filter = req.query.filter as string || 'all';
+            const response = await this.userUseCase.getBookingHistory(userId, filter)
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS, HttpStatusCode.OK, response));
         } catch (error) {
@@ -249,8 +241,6 @@ export class UserController {
                 .json(handleError(ResponseMessage.BOOKING_VIEWDETAILS_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-
-
     async getRecentWorkspaces(req: Request, res: Response) {
         try {
             const response = await this.userUseCase.getRecentWorkspaces()
@@ -272,10 +262,11 @@ export class UserController {
                 .json(handleError(ResponseMessage.FETCH_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-    async workspaceDetails(req: Request, res: Response) {
+    async workspaceDetails(req: AuthenticatedRequestUser, res: Response) {
         try {
             const workspaceId = req.query.workspaceId as string
-            const response = await this.userUseCase.workspaceDetails(workspaceId)
+            const userId = req.user?.userId; 
+            const response = await this.userUseCase.workspaceDetails(workspaceId, userId)
             if (response) {
                 res.status(HttpStatusCode.OK)
                     .json(handleSuccess(ResponseMessage.WORKSPACE_VIEW_SUCCESS, HttpStatusCode.OK, response));
@@ -286,6 +277,19 @@ export class UserController {
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.WORKSPACE_VIEW_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+    async saveWorkspace(req: AuthenticatedRequestUser, res: Response) {
+        try {
+            const { workspaceId, isSaved } = req.body
+            const userId = req.user?.userId
+            const result = await this.userUseCase.saveWorkspace(userId, workspaceId, isSaved) 
+            res.status(HttpStatusCode.OK)
+                    .json(handleSuccess(ResponseMessage.SAVE_WORKSPACE_SUCCESS, HttpStatusCode.OK, result));
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.SAVE_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 }

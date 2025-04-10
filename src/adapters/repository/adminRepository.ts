@@ -3,22 +3,26 @@ import IadminRepository from "../../interface/Repository/adminRepository";
 import Iuser from "../../entities/userEntity";
 import IOwner from "../../entities/ownerEntity";
 import { IWorkspace } from "../../entities/workspaceEntity";
+import { IBooking } from "../../entities/bookingEntity";
 
 export default class adminRepository implements IadminRepository {
     private admin: Model<Iuser>
     private user: Model<Iuser>
     private owner: Model<IOwner>
     private workspace: Model<IWorkspace>
+    private booking: Model<IBooking>
     constructor(
         admin: Model<Iuser>,
         user: Model<Iuser>,
         owner: Model<IOwner>,
         workspace: Model<IWorkspace>,
+        booking: Model<IBooking>
     ) {
         this.admin = admin
         this.user = user
         this.owner = owner
         this.workspace = workspace
+        this.booking = booking
     }
 
     async checkEmailExists(email: string) {
@@ -148,6 +152,79 @@ export default class adminRepository implements IadminRepository {
             return response
         } catch (error) {
             throw error
+        }
+    }
+    async getServiceFeeSum(startDate: Date, endDate: Date) {
+        try {
+            const matchStage: { date?: { $gte: Date; $lte: Date } } = {};
+            if (startDate && endDate) {
+                matchStage.date = { $gte: startDate, $lte: endDate };
+            }
+            if (startDate && endDate) {
+                matchStage.date = { $gte: startDate, $lte: endDate };
+            }
+            const result = await this.booking.aggregate([
+                { $match: matchStage },
+                {
+                    $group: {
+                        _id: null,
+                        totalServiceFee: { $sum: "$serviceFee" }
+                    }
+                }
+            ]);
+            return result.length > 0 ? result[0].totalServiceFee : 0;
+
+        } catch (error) {
+            console.log(error)
+            throw error
+        }
+    }
+    async getAllBookings(page: number = 1, limit: number = 5) {
+        try {
+            const skip = (page - 1) * limit;
+            return await this.booking.find()
+                .populate('workspaceId', 'workspaceName workspaceMail')
+                .sort({ date: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean();
+        } catch (error) {
+            console.log(error);
+            throw error
+        }
+    }
+    async getAllBookingsCount() {
+        try {
+            return await this.booking.countDocuments();
+        } catch (error) {
+            throw error;
+        }
+    }
+    async getBookingsWithinDateRange(startDate: Date, endDate: Date, page: number = 1, limit: number = 5) {
+        try {
+            const skip = (page - 1) * limit;
+            return await this.booking.find({
+                date: { $gte: startDate, $lte: endDate }
+            })
+                .populate('workspaceId', 'workspaceName workspaceMail')
+                .sort({ date: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean();
+
+        } catch (error) {
+            console.log(error);
+            throw error
+        }
+    }
+    async getBookingsCountWithinDateRange(startDate: Date, endDate: Date) {
+        try {
+            return await this.booking.countDocuments({
+                date: { $gte: startDate, $lte: endDate }
+            });
+        } catch (error) {
+            console.log(error);
+            throw error;
         }
     }
 }

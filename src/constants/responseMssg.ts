@@ -68,6 +68,8 @@ export enum ResponseMessage {
     DELETE_WORKSPACE_FAILURE = "Failed to delete workspace",
     EDIT_WORKSPACE_SUCCESS = "Workspace updated successfully",
     EDIT_WORKSPACE_FAILURE = "Failed to update workspace",
+    SAVE_WORKSPACE_SUCCESS = 'Workspace has been added to saved list',
+    SAVE_WORKSPACE_FAILURE = 'Failed to save workspace. Please try again.',
 
     //Booking
     AVAILABILITY_CHECK_SUCCESS = "Workspace is available for Booking",

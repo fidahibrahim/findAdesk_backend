@@ -5,20 +5,24 @@ import Iuser from "../../entities/userEntity"
 import { IOtp } from "../../entities/otpEntity"
 import { GoogleProfileResponse, Ifilter } from "../../interface/Usecase/IUserUseCase";
 import { IWorkspace } from "../../entities/workspaceEntity";
+import { ISavedWorkspace } from "../../entities/savedWorkspaceEntity";
 
 
 export default class userRepository implements IuserRepository {
     private user: Model<Iuser>
     private otp: Model<IOtp>
     private workspace: Model<IWorkspace>
+    private savedWorkspace: Model<ISavedWorkspace>
     constructor(
         user: Model<Iuser>,
         otp: Model<IOtp>,
-        workspace: Model<IWorkspace>
+        workspace: Model<IWorkspace>,
+        savedWorkspace: Model<ISavedWorkspace>
     ) {
         this.user = user
         this.otp = otp
         this.workspace = workspace
+        this.savedWorkspace = savedWorkspace
     }
     async createUser(data: IRegisterBody) {
         try {
@@ -182,7 +186,6 @@ export default class userRepository implements IuserRepository {
                     { $all: filters.amenities.split(",").map(item => item.trim()) } :
                     undefined;
             }
-
             if (filters.sortBy) {
                 switch (filters.sortBy) {
                     case 'recommended':
@@ -194,7 +197,6 @@ export default class userRepository implements IuserRepository {
                     case 'price-high':
                         sortOptions.pricePerHour = -1;
                         break;
-
                 }
             }
             query.status = "Approved";
@@ -204,10 +206,16 @@ export default class userRepository implements IuserRepository {
             throw error
         }
     }
-    async workspaceDetails(workspaceId: string) {
+    async workspaceDetails(workspaceId: string, userId?: string) {
         try {
-            const response = await this.workspace.findById(workspaceId)
-            return response
+            const workspace = await this.workspace.findById(workspaceId)
+            const workspaceObject = workspace?.toObject() as IWorkspace;
+            let isSaved = false;
+            if(userId) {
+                const savedWorkspace = await this.savedWorkspace.findOne({ userId, workspaceId, isActive: true })
+                isSaved = !!savedWorkspace;
+            }
+            return { ...workspaceObject, isSaved }
         } catch (error) {
             throw error
         }

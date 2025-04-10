@@ -30,4 +30,5 @@ export interface IUserController{
     getRecentWorkspaces(req: Request, res: Response): Promise<void>
     filterWorkspaces(req: Request, res: Response): Promise<void>
     workspaceDetails(req: Request, res: Response): Promise<void>
+    saveWorkspace(req: Request, res: Response): Promise<void>
 }

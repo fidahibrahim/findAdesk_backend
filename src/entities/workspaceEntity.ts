@@ -18,6 +18,7 @@ export interface IWorkspace {
     images: string[];
     status?: "pending" | "approved" | "rejected";
     existingImages?: string[];
+    isSaved?: boolean;
 }
 
 export interface editWorkspaceData {

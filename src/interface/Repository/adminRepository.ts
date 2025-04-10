@@ -1,3 +1,4 @@
+import { IBooking } from "../../entities/bookingEntity";
 import IOwner from "../../entities/ownerEntity";
 import Iuser from "../../entities/userEntity"
 import { IWorkspace } from "../../entities/workspaceEntity";
@@ -14,4 +15,9 @@ export default interface IadminRepository {
     getWorkspaces(search: string, page: number, limit: number, status?: string): Promise<{ workspaces: IWorkspace[] | null; totalCount: number }>
     updateStatus(workspaceId: string, status: string): Promise<IWorkspace | null>
     workspaceDetails(workspaceId: string): Promise<IWorkspace | null>
+    getServiceFeeSum(startDate?: Date, endDate?: Date): Promise<any>
+    getAllBookings(page: number, limit: number ): Promise<IBooking[]>
+    getAllBookingsCount(): Promise<any>
+    getBookingsWithinDateRange(startDate: Date, endDate: Date, page: number , limit: number ): Promise<IBooking[]>
+    getBookingsCountWithinDateRange(startDate: Date, endDate: Date): Promise<any>
 }

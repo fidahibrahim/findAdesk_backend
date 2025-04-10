@@ -10,10 +10,12 @@ import Iuser from "../entities/userEntity";
 import { createImageUrl, sendObjectToS3 } from "../infrastructure/utils/s3Bucket";
 import { ResponseMessage } from "../constants/responseMssg";
 import { IBookingRepository } from "../interface/Repository/bookingRepository";
+import { IWorkspaceRepository } from "../interface/Repository/workspaceRepository";
 
 export default class userUseCase implements IuserUseCase {
     private userRepository: IuserRepository;
     private bookingRepository: IBookingRepository;
+    private workspaceRepository: IWorkspaceRepository;
     private hashingService: IhashingService;
     private otpService: IotpService
     private jwtService: IjwtService
@@ -21,16 +23,18 @@ export default class userUseCase implements IuserUseCase {
     constructor(
         userRepository: IuserRepository,
         bookingRepository: IBookingRepository,
+        workspaceRepository: IWorkspaceRepository,
         HashingService: IhashingService,
         otpService: IotpService,
-        jwtService: IjwtService
+        jwtService: IjwtService,
 
     ) {
         this.userRepository = userRepository;
-        this.bookingRepository = bookingRepository
+        this.bookingRepository = bookingRepository;
+        this.workspaceRepository = workspaceRepository;
         this.hashingService = HashingService;
-        this.otpService = otpService
-        this.jwtService = jwtService
+        this.otpService = otpService;
+        this.jwtService = jwtService;
     }
     async register(data: IRegisterBody): Promise<IRegister> {
         try {
@@ -263,18 +267,34 @@ export default class userUseCase implements IuserUseCase {
             throw error
         }
     }
-    async workspaceDetails(workspaceId: string) {
+    async workspaceDetails(workspaceId: string, userId?: string) {
         try {
-            const response = await this.userRepository.workspaceDetails(workspaceId)
+            const response = await this.userRepository.workspaceDetails(workspaceId, userId)
             return response
         } catch (error) {
             throw error
         }
     }
-    async getBookingHistory(userId: string | undefined) {
+    async getBookingHistory(userId: string | undefined, filter: string = 'all') {
         try {
-            const bookings = await this.bookingRepository.getBookingHistory(userId)
+            const bookings = await this.bookingRepository.getBookingHistory(userId, filter)
             return bookings
+        } catch (error) {
+            throw error
+        }
+    }
+    async saveWorkspace(userId: string , workspaceId: string, isSaved: boolean) {
+        try {
+            const existingSave = await this.workspaceRepository.findSavedWorkspace(userId, workspaceId)
+            let result;
+            if(existingSave && !isSaved) {
+                result = await this.workspaceRepository.saveWorkspace(userId, workspaceId, false)
+            } else if (!existingSave && isSaved) {
+                result = await this.workspaceRepository.saveWorkspace(userId, workspaceId, true)
+            } else {
+                result = { changed: false, status: isSaved };
+            }
+            return result
         } catch (error) {
             throw error
         }

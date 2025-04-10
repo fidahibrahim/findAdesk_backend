@@ -20,7 +20,7 @@ export interface IBooking {
     subTotal: number;
     total: number;
     grandTotal: number;
-    status?: "pending" | "completed"
+    status?: "pending" | "completed" | "cancelled"
 }
 
 export interface ICreateBooking {

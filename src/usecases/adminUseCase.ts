@@ -145,13 +145,15 @@ export default class adminUseCase implements IadminUseCase {
         }
     }
 
-    async getAdminRevenue(filter: any) {
+    async getAdminRevenue(filter: string, page: number = 1, limit: number = 5) {
         try {
-            const totalRevenue = await this.bookingRepository.getServiceFeeSum();
+            const totalRevenue = await this.adminRepository.getServiceFeeSum();
             let filteredRevenue;
+            let bookings = [];
+            let totalCount = 0;
+            let startDate, endDate;
             if (filter) {
                 const now = new Date();
-                let startDate, endDate;
 
                 switch (filter.toLowerCase()) {
                     case 'daily':
@@ -171,20 +173,26 @@ export default class adminUseCase implements IadminUseCase {
                         endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
                         break;
                     default:
-                        filteredRevenue = totalRevenue; 
+                        filteredRevenue = totalRevenue;
                         break;
                 }
 
                 if (startDate && endDate) {
-                    filteredRevenue = await this.bookingRepository.getServiceFeeSum(startDate, endDate);
+                    filteredRevenue = await this.adminRepository.getServiceFeeSum(startDate, endDate);
+                    totalCount = await this.adminRepository.getBookingsCountWithinDateRange(startDate, endDate);
+                    bookings = await this.adminRepository.getBookingsWithinDateRange(startDate, endDate, page, limit);
                 } else {
                     filteredRevenue = totalRevenue;
+                    totalCount = await this.adminRepository.getAllBookingsCount();
+                    bookings = await this.adminRepository.getAllBookings(page, limit);
                 }
             } else {
-                filteredRevenue = totalRevenue; 
+                filteredRevenue = totalRevenue;
+                totalCount = await this.adminRepository.getAllBookingsCount();
+                bookings = await this.adminRepository.getAllBookings(page, limit);
             }
 
-            return { totalRevenue, filteredRevenue };
+            return { totalRevenue, filteredRevenue, bookings, totalCount };
         } catch (error) {
             throw error
         }

@@ -2,13 +2,17 @@ import mongoose, { Model } from "mongoose";
 import { checkoutBookingDetails, IBooking, ICreateBooking } from "../../entities/bookingEntity";
 import { IBookingRepository } from "../../interface/Repository/bookingRepository";
 import { IWorkspace } from "../../entities/workspaceEntity";
+import { ISavedWorkspace } from "../../entities/savedWorkspaceEntity";
 
 export default class bookingRepository implements IBookingRepository {
   private booking: Model<IBooking>;
   private workspace: Model<IWorkspace>;
-  constructor(booking: Model<IBooking>, workspace: Model<IWorkspace>) {
+  private savedWorkspace: Model<ISavedWorkspace>;
+
+  constructor(booking: Model<IBooking>, workspace: Model<IWorkspace>, savedWorkspace: Model<ISavedWorkspace>) {
     this.booking = booking;
     this.workspace = workspace;
+    this.savedWorkspace = savedWorkspace;
   }
 
   async createBooking(booking: ICreateBooking) {
@@ -181,42 +185,34 @@ export default class bookingRepository implements IBookingRepository {
         })
         .populate({
           path: 'workspaceId',
-          select: 'workspaceName workspaceMail place street state'
         })
       return response
     } catch (error) {
       throw error
     }
   }
-
-  async getServiceFeeSum(startDate: Date, endDate: Date) {
+  async getBookingHistory(userId: string | undefined, filter: string) {
     try {
-      const matchStage: { date?: { $gte: Date; $lte: Date } } = {};
-      if (startDate && endDate) {
-        matchStage.date = { $gte: startDate, $lte: endDate };
+      if (filter === 'saved') {
+        const savedWorkspaces = await this.savedWorkspace.find({ userId: userId, isActive: true })
+          .sort({ createdAt: -1 })
+          .populate({
+            path: 'workspaceId',
+            select: 'workspaceName workspaceMail spaceDescription place street state images'
+          });
+          return savedWorkspaces.map(item => ({
+            _id: item._id,
+            userId: item.userId,
+            workspaceId: item.workspaceId,
+            status: 'saved',
+          }));
       }
-      if (startDate && endDate) {
-        matchStage.date = { $gte: startDate, $lte: endDate };
+      let query: any = { userId: userId }
+      if (filter !== 'all') {
+        query.status = filter
       }
-      const result = await this.booking.aggregate([
-        { $match: matchStage },
-        {
-          $group: {
-            _id: null,
-            totalServiceFee: { $sum: "$serviceFee" }
-          }
-        }
-      ]);
-      return result.length > 0 ? result[0].totalServiceFee : 0;
-
-    } catch (error) {
-      throw error
-    }
-  }
-
-  async getBookingHistory(userId: string | undefined) {
-    try {
-      const bookings = await this.booking.find({ userId: userId })
+      const bookings = await this.booking.find(query)
+        .sort({ _id: -1 })
         .populate({
           path: 'workspaceId',
           select: 'workspaceName workspaceMail place street state images'

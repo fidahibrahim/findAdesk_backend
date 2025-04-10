@@ -19,6 +19,7 @@ import bookingUseCase from "../../usecases/bookingUseCase"
 import userRepository from "../../adapters/repository/userRepository"
 import userModel from "../model/userSchema"
 import { bookingController } from "../../adapters/controller/bookingController"
+import SavedWorkspace from "../model/savedWorkspaceSchema"
 
 const ownerRouter: Router = express.Router()
 const upload = multer()
@@ -28,9 +29,9 @@ const otpService = new OtpService()
 const jwtService = new JwtService()
 
 const OwnerRepository = new ownerRepository(ownerModel, OtpModel)
-const BookingRepository = new bookingRepository(bookingModel, workspaceModel)
-const UserRepository = new userRepository(userModel, OtpModel, workspaceModel)
-const WorkspaceRepository = new workspaceRepository(workspaceModel)
+const BookingRepository = new bookingRepository(bookingModel, workspaceModel, SavedWorkspace)
+const UserRepository = new userRepository(userModel, OtpModel, workspaceModel, SavedWorkspace)
+const WorkspaceRepository = new workspaceRepository(workspaceModel, SavedWorkspace)
 
 const OwnerUseCase = new ownerUseCase(
     OwnerRepository,

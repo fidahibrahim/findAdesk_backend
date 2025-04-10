@@ -20,6 +20,7 @@ export class bookingController {
         this.listBookings = this.listBookings.bind(this)
         this.getBookingDetailsOwner = this.getBookingDetailsOwner.bind(this)
         this.bookingConfirmDetails = this.bookingConfirmDetails.bind(this)
+        this.fetchBookingDetails = this.fetchBookingDetails.bind(this)
     }
     async checkAvailability(req: Request, res: Response) {
         try {
@@ -47,7 +48,6 @@ export class bookingController {
             const { workspaceId, bookingDetails, pricePerHour } = req.body;
             const userId = req.user?.userId;
             const bookingId = generateId();
-
             const response = await this.bookingUseCase.createBooking(
                 userId ?? "",
                 workspaceId,
@@ -55,24 +55,11 @@ export class bookingController {
                 pricePerHour,
                 bookingDetails
             );
-            res
-                .status(HttpStatusCode.OK)
-                .json(
-                    handleSuccess(
-                        ResponseMessage.BOOKING_CONFIRMATION,
-                        HttpStatusCode.OK,
-                        response
-                    )
-                );
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.BOOKING_CONFIRMATION, HttpStatusCode.OK, response));
         } catch (error) {
-            res
-                .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-                .json(
-                    handleError(
-                        ResponseMessage.BOOKING_FAILURE,
-                        HttpStatusCode.INTERNAL_SERVER_ERROR
-                    )
-                );
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.BOOKING_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR));
         }
     }
     async createStripeSession(req: Request, res: Response) {
@@ -111,24 +98,11 @@ export class bookingController {
                 cancel_url: `http://localhost:5000/checkout/${payload.bookingId}`,
             });
             await this.bookingUseCase.updateBookingStatus(payload.bookingId, 'completed')
-            res
-                .status(HttpStatusCode.OK)
-                .json(
-                    handleSuccess(
-                        ResponseMessage.BOOKING_CONFIRMATION,
-                        HttpStatusCode.OK,
-                        session
-                    )
-                );
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.BOOKING_CONFIRMATION, HttpStatusCode.OK, session));
         } catch (error) {
-            res
-                .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-                .json(
-                    handleError(
-                        ResponseMessage.BOOKING_FAILURE,
-                        HttpStatusCode.INTERNAL_SERVER_ERROR
-                    )
-                );
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.BOOKING_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR));
         }
     }
     async stripeWebhook(req: Request, res: Response) {
@@ -144,9 +118,7 @@ export class bookingController {
                 const session = event.data.object;
                 console.log("session", session);
             }
-
             console.log("✅ Verified Stripe event:", event);
-
             res.json({ received: true });
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
@@ -158,24 +130,11 @@ export class bookingController {
         try {
             const bookingId = req.query.bookingId as string;
             const response = await this.bookingUseCase.getBookingDetails(bookingId);
-            res
-                .status(HttpStatusCode.OK)
-                .json(
-                    handleSuccess(
-                        ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS,
-                        HttpStatusCode.OK,
-                        response
-                    )
-                );
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS, HttpStatusCode.OK, response));
         } catch (error) {
-            res
-                .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-                .json(
-                    handleError(
-                        ResponseMessage.FETCH_PROFILE_FAILURE,
-                        HttpStatusCode.INTERNAL_SERVER_ERROR
-                    )
-                );
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.FETCH_PROFILE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -213,6 +172,17 @@ export class bookingController {
         try {
             const bookingId = req.query.bookingId as string;
             const response = await this.bookingUseCase.bookingConfirmDetails(bookingId)
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS, HttpStatusCode.OK, response));
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.BOOKING_VIEWDETAILS_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+    async fetchBookingDetails(req: Request, res: Response) {
+        try {
+            const bookingId = req.query.bookingId as string;
+            const response = await this.bookingUseCase.bookingViewDetails(bookingId)
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS, HttpStatusCode.OK, response));
         } catch (error) {

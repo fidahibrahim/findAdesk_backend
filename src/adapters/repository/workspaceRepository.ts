@@ -1,13 +1,17 @@
 import { Model } from "mongoose";
 import { IWorkspaceRepository } from "../../interface/Repository/workspaceRepository";
 import { IWorkspace } from "../../entities/workspaceEntity";
+import { ISavedWorkspace } from "../../entities/savedWorkspaceEntity";
 
 export default class workspaceRepository implements IWorkspaceRepository {
     private workspace: Model<IWorkspace>
+    private savedWorkspace: Model<ISavedWorkspace>
     constructor(
         workspace: Model<IWorkspace>,
+        savedWorkspace: Model<ISavedWorkspace>
     ) {
         this.workspace = workspace
+        this.savedWorkspace = savedWorkspace
     }
     async addWorkspace(data: IWorkspace): Promise<IWorkspace | null> {
         let parsedAmenities = [];
@@ -44,7 +48,7 @@ export default class workspaceRepository implements IWorkspaceRepository {
             throw error
         }
     }
-    async findWorkspace (workspaceId: string) {
+    async findWorkspace(workspaceId: string) {
         try {
             return await this.workspace.findById(workspaceId)
         } catch (error) {
@@ -129,6 +133,49 @@ export default class workspaceRepository implements IWorkspaceRepository {
                 throw new Error('Failed to update workspace');
             }
             return updatedWorkspace
+        } catch (error) {
+            throw error
+        }
+    }
+    async findSavedWorkspace(userId: string, workspaceId: string) {
+        try {
+            const savedWorkspace = await this.savedWorkspace.findOne({
+                userId, workspaceId, isActive: true
+            })
+            console.log(savedWorkspace, 'saved workspace in repository')
+            return savedWorkspace
+        } catch (error) {
+            console.log(error)
+            throw error
+        }
+    }
+    async saveWorkspace(userId: string, workspaceId: string, isSaved: boolean) {
+        try {
+            if (isSaved) {
+                const savedWorkspace = await this.savedWorkspace.findOneAndUpdate(
+                    { userId, workspaceId },
+                    {
+                        userId,
+                        workspaceId,
+                        isActive: true,
+                    },
+                    { upsert: true, new: true }
+                );
+                return {
+                    savedWorkspace,
+                    saved: true
+                }
+            } else {
+                const savedWorkspace = await this.savedWorkspace.findOneAndUpdate(
+                    { userId, workspaceId },
+                    { isActive: false },
+                    { new: true }
+                );
+                return {
+                    savedWorkspace,
+                    saved: false
+                }
+            }
         } catch (error) {
             console.log(error)
             throw error

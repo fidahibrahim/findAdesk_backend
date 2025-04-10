@@ -11,12 +11,13 @@ import adminAuth from "../middleware/adminAuth"
 import workspaceModel from "../model/workspaceSchema"
 import bookingRepository from "../../adapters/repository/bookingRepository"
 import bookingModel from "../model/bookingSchema"
+import SavedWorkspace from "../model/savedWorkspaceSchema"
 
 const JwtService = new JwtToken()
 const HashingServiceInstance = new HashingService()
 const OtpService = new otpService()
-const AdminRepository = new adminRepository(user, user, ownerModel, workspaceModel)
-const BookingRepository = new bookingRepository(bookingModel, workspaceModel)
+const AdminRepository = new adminRepository(user, user, ownerModel, workspaceModel, bookingModel)
+const BookingRepository = new bookingRepository(bookingModel, workspaceModel, SavedWorkspace)
 
 const AdminUseCaseInstance = new adminUseCase(
     AdminRepository,

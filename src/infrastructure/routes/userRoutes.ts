@@ -15,6 +15,7 @@ import bookingModel from '../model/bookingSchema'
 import bookingUseCase from '../../usecases/bookingUseCase'
 import { bookingController } from '../../adapters/controller/bookingController'
 import workspaceRepository from '../../adapters/repository/workspaceRepository'
+import SavedWorkspace from '../model/savedWorkspaceSchema'
 
 const userRouter: Router = express.Router()
 const upload = multer()
@@ -23,14 +24,15 @@ const hashingService = new HashingService()
 const otpService = new OtpService()
 const jwtService = new JwtToken()
 
-const UserRepository = new userRepository(users, OtpSchema, workspaceModel)
-const BookingRepository = new bookingRepository(bookingModel, workspaceModel)
-const WorkspaceRepository = new workspaceRepository(workspaceModel)
+const UserRepository = new userRepository(users, OtpSchema, workspaceModel, SavedWorkspace, )
+const BookingRepository = new bookingRepository(bookingModel, workspaceModel, SavedWorkspace)
+const WorkspaceRepository = new workspaceRepository(workspaceModel, SavedWorkspace)
 
 
 const UserUseCase = new userUseCase(
     UserRepository,
     BookingRepository,
+    WorkspaceRepository,
     hashingService,
     otpService,
     jwtService
@@ -60,15 +62,19 @@ userRouter.get('/getProfile', authenticateUser, userController.getProfile)
 userRouter.put('/editProfile', authenticateUser, upload.single('image'), userController.editProfile)
 userRouter.post('/profile/resetPassword', authenticateUser, userController.resetPassword)
 userRouter.get('/bookingHistory', authenticateUser, userController.getBookingHistory)
+userRouter.get('/fetchBookingDetails', authenticateUser, BookingController.fetchBookingDetails)
 
 userRouter.get('/recents', userController.getRecentWorkspaces)
 userRouter.post('/searchWorkspaces', authenticateUser, userController.filterWorkspaces)
 userRouter.get('/workspaceDetails', authenticateUser, userController.workspaceDetails)
 userRouter.post('/checkAvailability', authenticateUser, BookingController.checkAvailability)
 userRouter.post('/pendingBookings', authenticateUser, BookingController.createBooking)
-userRouter.get( "/bookings/details", authenticateUser, BookingController.getBookingDetails)
+userRouter.get("/bookings/details", authenticateUser, BookingController.getBookingDetails)
 userRouter.post('/bookings/createStripeSession', BookingController.createStripeSession)
 userRouter.post('/webhook', express.raw({ type: "application/json" }), BookingController.stripeWebhook)
 userRouter.get('/bookingConfirmDetails', authenticateUser, BookingController.bookingConfirmDetails)
+
+
+userRouter.post('/saveWorkspace', authenticateUser, userController.saveWorkspace)
 
 export default userRouter

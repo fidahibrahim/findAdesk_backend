@@ -24,6 +24,6 @@ export interface IuserRepository {
     changePassword(userId: string, password: string): Promise<IUser|null>
     getRecentWorkspaces(): Promise<IWorkspace[] | null>
     findWorkspaces(filters: Ifilter): Promise<IWorkspace[] | null>
-    workspaceDetails(workspaceId: string): Promise<IWorkspace | null>
+    workspaceDetails(workspaceId: string, userId: string|undefined): Promise<IWorkspace | null>
     updateUserMobile(userId: string, mobile: string): Promise<boolean>
 }

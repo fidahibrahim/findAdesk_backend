@@ -20,7 +20,7 @@ export class adminController implements IAdminController {
         this.updateStatus = this.updateStatus.bind(this)
         this.viewWorkspaceDetails = this.viewWorkspaceDetails.bind(this)
         this.getAdminRevenue = this.getAdminRevenue.bind(this)
-        
+
     }
 
     async login(req: Request, res: Response) {
@@ -49,7 +49,6 @@ export class adminController implements IAdminController {
     }
     async logout(req: Request, res: Response) {
         try {
-            console.log(req.cookies, "cookiee before")
             res.cookie("adminToken", "", { httpOnly: true, expires: new Date() })
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.LOGIN_SUCCESS, HttpStatusCode.OK, { status: true }))
@@ -144,7 +143,6 @@ export class adminController implements IAdminController {
         try {
             const workspaceId = req.query.workspaceId as string
             const response = await this.adminUsecase.workspaceDetails(workspaceId)
-            console.log(response, "response in controller")
             if (response) {
                 res.status(HttpStatusCode.OK)
                     .json(handleSuccess(ResponseMessage.WORKSPACE_VIEW_SUCCESS, HttpStatusCode.OK, response));
@@ -160,18 +158,24 @@ export class adminController implements IAdminController {
 
     async getAdminRevenue(req: Request, res: Response) {
         try {
-            const filter = req.query.filter
-            console.log(filter,'filter in controller')
-            const { totalRevenue, filteredRevenue } = await this.adminUsecase.getAdminRevenue(filter)
-            console.log(totalRevenue,"total revenue in controller")
-            console.log(filteredRevenue,'filtered revenue in controller')
+            const filter = req.query.filter as string
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 5;
+
+            const { totalRevenue, filteredRevenue, bookings, totalCount } = await this.adminUsecase.getAdminRevenue(filter, page, limit)
             const response = {
                 totalRevenue: Number(totalRevenue.toFixed(2)),
-                filteredRevenue: Number(filteredRevenue.toFixed(2))
+                filteredRevenue: Number(filteredRevenue.toFixed(2)),
+                bookings: bookings,
+                pagination: {
+                    totalItems: totalCount,
+                    totalPages: Math.ceil(totalCount / limit),
+                    currentPage: page,
+                    itemsPerPage: limit
+                }
             }
-            console.log(response)
             res.status(HttpStatusCode.OK)
-                    .json(handleSuccess(ResponseMessage.REVENUE_FETCHED_SUCCESSFULLY, HttpStatusCode.OK, response ));
+                .json(handleSuccess(ResponseMessage.REVENUE_FETCHED_SUCCESSFULLY, HttpStatusCode.OK, response));
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.REVENUE_FETCHED_FAILED, HttpStatusCode.INTERNAL_SERVER_ERROR))
