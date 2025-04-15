@@ -11,4 +11,5 @@ export interface IWorkspaceRepository {
     editWorkspace(workspaceId: string, data: IWorkspace): Promise<editWorkspaceData | null>
     findSavedWorkspace(userId: string, workspaceId: string): Promise<ISavedWorkspace| null>
     saveWorkspace(userId: string, workspaceId: string, isSaved: boolean): Promise<{ savedWorkspace: ISavedWorkspace|null,saved: boolean }>
+    updateBookedSeats(workspaceId: string|undefined, seats: number|undefined): Promise<any>
 }

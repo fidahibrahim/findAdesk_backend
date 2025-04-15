@@ -6,4 +6,5 @@ export interface IReviewRepository {
     addReview(reviewData: AddReviewRequest): Promise<IReview| undefined>
     updateReview(reviewData: AddReviewRequest): Promise<IReview | null>
     getReviews(workspaceId: string): Promise<any>
+    getWorkspaceReviews(ownerId: string): Promise<any>
 }

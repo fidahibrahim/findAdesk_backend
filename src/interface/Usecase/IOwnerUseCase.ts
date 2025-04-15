@@ -6,4 +6,5 @@ export default interface IOwnerUseCase {
     ownerVerifyOtp(email: string, otp: string): Promise<otpRes>
     resendOtp(email: string): Promise<string | null>
     login(data: loginBody): Promise<loginRes | null>
+    getDashboardData(ownerId: string): Promise<any>
 }

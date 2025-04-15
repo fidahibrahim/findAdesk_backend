@@ -177,6 +177,23 @@ export default class workspaceRepository implements IWorkspaceRepository {
                 }
             }
         } catch (error) {
+            throw error
+        }
+    }
+    async updateBookedSeats(workspaceId: string, seats: number) {
+        try {
+            if (typeof seats !== 'number' || isNaN(seats)) {
+                throw new Error('Invalid seats value: ' + seats);
+            }
+            console.log('Valid seats value:', seats);
+            return await this.workspace.findByIdAndUpdate(
+                workspaceId,
+                {
+                    $inc: { bookedSeats: -seats }
+                },
+                { new: true }
+            )
+        } catch (error) {
             console.log(error)
             throw error
         }

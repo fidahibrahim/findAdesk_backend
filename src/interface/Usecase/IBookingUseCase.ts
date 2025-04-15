@@ -55,4 +55,5 @@ export interface IBookingUseCase {
         paymentMethod: string,
         worksapceId: string
     ): Promise<any>;
+    cancelBooking(bookingId: string): Promise<any>
 }

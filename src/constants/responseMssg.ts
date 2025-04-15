@@ -54,6 +54,9 @@ export enum ResponseMessage {
     OWNER_REGISTER_FAILURE = "Failed to register owner",
     OWNER_NOT_FOUND = "Owner not found",
     
+    //admin
+    FETCH_DASHBOARD = 'Dashboard data fetched successfully',
+    FETCH_DASHBOARD_FAILURE = 'Failed to fetch dashboard data',
     
     //workspace
     WORKSPACE_REGISTER_SUCCESS = "Workspace registered successfully",
@@ -80,11 +83,18 @@ export enum ResponseMessage {
     BOOKING_LISTING_FAILURE = "Failed to fetch bookings",
     BOOKING_VIEWDETAILS_SUCCESS = "Booking details fetched successfully",
     BOOKING_VIEWDETAILS_FAILURE = "Failed to fetch booking details",
+    CANCEL_BOOKING = 'Booking cancelled successfully',
+    CANCEL_BOOKING_FAILURE = 'Failed to cancel booking',
 
     //Review
     ADD_REVIEW_SUCCESS = 'Review submitted successfully!',
     ADD_REVIEW_FAILURE = 'Failed to add your review',
     GET_REVIEW_SUCCESS = 'Reviews fetched successfully',
     GET_REVIEW_FAILURE = 'Failed to fetch reviews',
+
+    //Wallet 
+    FETCH_WALLET = 'Wallet fetched successfully',
+    FETCH_WALLET_FAILURE = 'Failed to fetch wallet',
+    
   }
   

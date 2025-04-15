@@ -20,6 +20,7 @@ export class adminController implements IAdminController {
         this.updateStatus = this.updateStatus.bind(this)
         this.viewWorkspaceDetails = this.viewWorkspaceDetails.bind(this)
         this.getAdminRevenue = this.getAdminRevenue.bind(this)
+        this.fetchDashboardData = this.fetchDashboardData.bind(this)
 
     }
 
@@ -179,6 +180,34 @@ export class adminController implements IAdminController {
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.REVENUE_FETCHED_FAILED, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+    async fetchDashboardData(req: Request, res: Response) {
+        try {
+            const userCount = await this.adminUsecase.getUserCount()
+            const workspaceCount = await this.adminUsecase.getWorkspaceCount()
+            const recentUsers = await this.adminUsecase.getRecentUsers()
+            const recentWorkspaces = await this.adminUsecase.getRecentWorkspaces()
+            const totalRevenue = await this.adminUsecase.getTotalRevenue();
+            const monthlyRevenue = await this.adminUsecase.getMonthlyRevenue();
+            const yearlyRevenue = await this.adminUsecase.getYearlyRevenue();
+            const response = {
+                stats: {
+                    userCount,
+                    workspaceCount,
+                    totalRevenue
+                },
+                recentUsers,
+                recentWorkspaces,
+                monthlyRevenue,
+                yearlyRevenue
+            }
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.FETCH_DASHBOARD, HttpStatusCode.OK, response));
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.FETCH_DASHBOARD_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 }

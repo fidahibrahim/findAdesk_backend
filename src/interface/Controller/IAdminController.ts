@@ -11,4 +11,5 @@ export interface IAdminController {
     viewWorkspaceDetails(req: Request, res: Response): Promise<void>
     updateStatus(req: Request, res: Response): Promise<void>
     getAdminRevenue(req: Request, res: Response): Promise<void>
+    fetchDashboardData(req: Request, res: Response): Promise<void>
 }

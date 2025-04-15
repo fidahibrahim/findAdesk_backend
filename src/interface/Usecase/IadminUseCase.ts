@@ -24,4 +24,12 @@ export interface IadminUseCase {
     updateStatus(workspaceId: string, status: string): Promise<IWorkspace | undefined>
     workspaceDetails(workspaceId: string): Promise<IWorkspace|null>
     getAdminRevenue(filter: string, page: number, limit: number): Promise<any>
+    getUserCount(): Promise<number>
+    getWorkspaceCount(): Promise<number>
+    getRecentUsers(): Promise<Iuser[]>
+    getRecentWorkspaces(): Promise<IWorkspace[]>
+    getTotalRevenue(): Promise<number>
+    getMonthlyRevenue(): Promise<any>
+    getYearlyRevenue(): Promise<any>
+    
 }

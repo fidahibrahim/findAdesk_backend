@@ -34,6 +34,9 @@ const AdminController = new adminController(AdminUseCaseInstance)
 adminRouter.post('/login', AdminController.login)
 adminRouter.post('/logout', AdminController.logout)
 
+// dashboard
+adminRouter.get('/dashboardData', adminAuth, AdminController.fetchDashboardData)
+
 // user management 
 adminRouter.get("/getUsers", adminAuth, AdminController.getUsers)
 adminRouter.patch("/blockUser", adminAuth, AdminController.blockUser)
@@ -47,5 +50,6 @@ adminRouter.get("/getWorkspaces", adminAuth, AdminController.getWorkspaces)
 adminRouter.get('/workspaceDetails', adminAuth, AdminController.viewWorkspaceDetails)
 adminRouter.put("/updateStatus", adminAuth, AdminController.updateStatus)
 adminRouter.get('/adminRevenue', adminAuth, AdminController.getAdminRevenue)
+
 
 export default adminRouter

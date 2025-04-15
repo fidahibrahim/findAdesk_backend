@@ -44,7 +44,6 @@ export default class ownerUseCase implements IOwnerUseCase {
             const otp = this.otpService.generateOtp()
             this.ownerRepository.saveOtp(data.email, otp,)
             this.otpService.sendEmail(data.email, otp, data.name)
-
             return createdOwner
 
         } catch (error) {
@@ -131,6 +130,32 @@ export default class ownerUseCase implements IOwnerUseCase {
                 status: false,
                 message: "",
             };
+        }
+    }
+    async getDashboardData(ownerId: string) {
+        try {
+            const workspaceCount = await this.ownerRepository.getWorkspaceCount(ownerId)
+            const bookingCount = await this.ownerRepository.getBookingCount(ownerId)
+            const totalRevenue = await this.ownerRepository.getTotalRevenue(ownerId)
+            const recentBookings = await this.ownerRepository.getRecentBookings(ownerId)
+            const recentWorkspaces = await this.ownerRepository.getRecentWorkspaces(ownerId)
+            const monthlyRevenue = await this.ownerRepository.getMonthlyRevenue(ownerId)
+            const yearlyRevenue = await this.ownerRepository.getYearlyRevenue(ownerId)
+
+            return {
+                stats: {
+                    workspaceCount,
+                    bookingCount,
+                    totalRevenue
+                },
+                recentBookings,
+                recentWorkspaces,
+                monthlyRevenue,
+                yearlyRevenue
+            };
+
+        } catch (error) {
+            throw error
         }
     }
 }

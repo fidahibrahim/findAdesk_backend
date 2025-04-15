@@ -154,41 +154,41 @@ export default class userRepository implements IuserRepository {
     }
     async getRecentWorkspaces() {
         try {
-            const workspaces = await this.workspace
+            return await this.workspace
                 .find()
                 .sort({ createdAt: -1 })
                 .limit(6)
                 .exec();
 
-            const workspaceIds = workspaces.map(workspace => workspace._id)
-            const reviews = await this.review.aggregate([
-                { $match: { workspaceId: { $in: workspaceIds } } },
-                { $unwind: '$ratings' },
-                {
-                    $group: {
-                        _id: '$workspaceId',
-                        averageRating: { $avg: "$ratings.rating" },
-                        totalRatings: { $sum: 1 }
-                    }
-                }
-            ])
-            const ratingsMap: Record<string, RatingInfo> = {};
-            reviews.forEach(review => {
-                ratingsMap[review._id.toString()] = {
-                    averageRating: parseFloat(review.averageRating.toFixed(1)),
-                    totalRatings: review.totalRatings
-                };
-            });
+            // const workspaceIds = workspaces.map(workspace => workspace._id)
+            // const reviews = await this.review.aggregate([
+            //     { $match: { workspaceId: { $in: workspaceIds } } },
+            //     { $unwind: '$ratings' },
+            //     {
+            //         $group: {
+            //             _id: '$workspaceId',
+            //             averageRating: { $avg: "$ratings.rating" },
+            //             totalRatings: { $sum: 1 }
+            //         }
+            //     }
+            // ])
+            // const ratingsMap: Record<string, RatingInfo> = {};
+            // reviews.forEach(review => {
+            //     ratingsMap[review._id.toString()] = {
+            //         averageRating: parseFloat(review.averageRating.toFixed(1)),
+            //         totalRatings: review.totalRatings
+            //     };
+            // });
 
-            const workspacesWithRatings = workspaces.map(workspace => {
-                const workspaceId = workspace._id.toString();
-                return {
-                    ...workspace,
-                    rating: ratingsMap[workspaceId] ? ratingsMap[workspaceId].averageRating : 0,
-                    totalRatings: ratingsMap[workspaceId] ? ratingsMap[workspaceId].totalRatings : 0
-                };
-            });
-            return workspacesWithRatings;
+            // const workspacesWithRatings = workspaces.map(workspace => {
+            //     const workspaceId = workspace._id.toString();
+            //     return {
+            //         ...workspace,
+            //         rating: ratingsMap[workspaceId] ? ratingsMap[workspaceId].averageRating : 0,
+            //         totalRatings: ratingsMap[workspaceId] ? ratingsMap[workspaceId].totalRatings : 0
+            //     };
+            // });
+            // return workspacesWithRatings;
         } catch (error) {
             throw error
         }

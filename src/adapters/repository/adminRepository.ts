@@ -48,6 +48,26 @@ export default class adminRepository implements IadminRepository {
             throw error
         }
     }
+    async getUserCount() {
+        try {
+            const response = await this.user.countDocuments()
+            console.log(response)
+            return response
+        } catch (error) {
+            console.log(error)
+            throw error
+        }
+    }
+    async getRecentUsers() {
+        try {
+            const users = await this.user.find().sort({ createdAt: -1 }).limit(3).lean();
+            console.log(users)
+            return users;
+        } catch (error) {
+            console.log(error)
+            throw error
+        }
+    }
     async blockOrUnBlockUser(userId: string): Promise<Iuser | null> {
         try {
             const user = await this.user.findById(userId)
@@ -98,7 +118,6 @@ export default class adminRepository implements IadminRepository {
     async findWorkspace(workspaceId: string) {
         try {
             const response = await this.workspace.findById(workspaceId)
-            console.log(response, "res from repo")
             return response
         } catch (error) {
             throw error
@@ -108,7 +127,6 @@ export default class adminRepository implements IadminRepository {
     async getWorkspaces(search: string, page: number, limit: number, status?: string) {
         try {
             let filter: any = {}
-            console.log("Received Params =>", { search, status, page, limit });
             if (search) {
                 filter.$or = [
                     { workspaceName: { $regex: search, $options: "i" } },
@@ -125,6 +143,24 @@ export default class adminRepository implements IadminRepository {
                 .sort({ _id: -1 });
             const totalCount = await this.workspace.countDocuments(filter)
             return { workspaces, totalCount }
+        } catch (error) {
+            throw error
+        }
+    }
+    async getRecentWorkspaces() {
+        try {
+            const response = await this.workspace.find().sort({ createdAt: -1 }).limit(3).lean()
+            return response
+        } catch (error) {
+            console.log(error)
+            throw error
+        }
+    }
+
+    async getWorkspaceCount() {
+        try {
+            const response = await this.workspace.countDocuments()
+            return response
         } catch (error) {
             throw error
         }
@@ -148,7 +184,6 @@ export default class adminRepository implements IadminRepository {
     async workspaceDetails(workspaceId: string) {
         try {
             const response = await this.workspace.findById(workspaceId)
-            console.log(response, "response in repo")
             return response
         } catch (error) {
             throw error
@@ -156,7 +191,7 @@ export default class adminRepository implements IadminRepository {
     }
     async getServiceFeeSum(startDate: Date, endDate: Date) {
         try {
-            const matchStage: { date?: { $gte: Date; $lte: Date } } = {};
+            const matchStage: { date?: { $gte: Date; $lte: Date }, status?: string } = { status: "completed" };
             if (startDate && endDate) {
                 matchStage.date = { $gte: startDate, $lte: endDate };
             }
@@ -189,7 +224,6 @@ export default class adminRepository implements IadminRepository {
                 .limit(limit)
                 .lean();
         } catch (error) {
-            console.log(error);
             throw error
         }
     }
@@ -213,7 +247,6 @@ export default class adminRepository implements IadminRepository {
                 .lean();
 
         } catch (error) {
-            console.log(error);
             throw error
         }
     }
@@ -223,8 +256,97 @@ export default class adminRepository implements IadminRepository {
                 date: { $gte: startDate, $lte: endDate }
             });
         } catch (error) {
-            console.log(error);
             throw error;
+        }
+    }
+    async calculateTotalRevenue() {
+        try {
+            const result = await this.booking.aggregate([
+                {
+                    $match: {
+                        status: 'completed'
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalServiceFee: { $sum: '$serviceFee' }
+                    }
+                }
+            ])
+            return result.length > 0 ? result[0].totalServiceFee : 0;
+        } catch (error) {
+            throw error
+        }
+    }
+    async getMonthlyRevenue(): Promise<any> {
+        try {
+            const currentYear = new Date().getFullYear();
+            const result = await this.booking.aggregate([
+                {
+                    $match: {
+                        status: 'completed',
+                        startTime: {
+                            $gte: new Date(`${currentYear}-01-01`),
+                            $lte: new Date(`${currentYear}-12-31`)
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: { $month: "$startTime" },
+                        revenue: { $sum: "$serviceFee" }
+                    }
+                },
+                {
+                    $sort: { _id: 1 }
+                }
+            ])
+            const monthlyData = Array(12).fill(0);
+            result.forEach(item => {
+                monthlyData[item._id - 1] = item.revenue;
+            });
+
+            return monthlyData;
+        } catch (error) {
+            throw error
+        }
+    }
+    async getYearlyRevenue(): Promise<any> {
+        try {
+            const currentYear = new Date().getFullYear();
+            const years = Array.from({ length: 5 }, (_, i) => currentYear - 4 + i);
+            const result = await this.booking.aggregate([
+                {
+                    $match: {
+                        status: 'completed',
+                        startTime: {
+                            $gte: new Date(`${years[0]}-01-01`),
+                            $lte: new Date(`${years[4]}-12-31`)
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: { $year: "$startTime" },
+                        revenue: { $sum: "$serviceFee" }
+                    }
+                },
+                {
+                    $sort: { _id: 1 }
+                }
+            ])
+            const yearlyData = Array(5).fill(0);
+            result.forEach(item => {
+                const index = years.indexOf(item._id);
+                if (index !== -1) {
+                    yearlyData[index] = item.revenue;
+                }
+            });
+
+            return yearlyData;
+        } catch (error) {
+            throw error
         }
     }
 }

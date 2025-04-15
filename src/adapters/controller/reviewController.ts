@@ -4,6 +4,7 @@ import { handleError, handleSuccess } from "../../infrastructure/utils/responseH
 import { HttpStatusCode } from "../../constants/httpStatusCode";
 import { ResponseMessage } from "../../constants/responseMssg";
 import { AuthenticatedRequestUser } from "../../infrastructure/middleware/userAuth";
+import { AuthenticatedRequest } from "../../infrastructure/middleware/ownerAuth";
 
 export class reviewController {
     private reviewUseCase: IReviewUseCase
@@ -39,6 +40,20 @@ export class reviewController {
             const response = await this.reviewUseCase.getReviews(workspaceId)
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.GET_REVIEW_SUCCESS, HttpStatusCode.OK, response))
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.GET_REVIEW_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+    async getAllReviews(req: AuthenticatedRequest, res: Response) {
+        try {
+            const ownerId = req.owner?.userId
+            console.log(ownerId,'ownerid in controller')
+            const workspaces = await this.reviewUseCase.getWorkspaceReviews(ownerId!)
+            console.log(workspaces, 'workspaces in controller')
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.GET_REVIEW_SUCCESS, HttpStatusCode.OK, workspaces))
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.GET_REVIEW_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))

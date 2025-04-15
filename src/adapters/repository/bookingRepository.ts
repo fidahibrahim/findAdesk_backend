@@ -1,9 +1,29 @@
-import mongoose, { Model } from "mongoose";
+import mongoose, { Model, Types } from "mongoose";
 import { checkoutBookingDetails, IBooking, ICreateBooking } from "../../entities/bookingEntity";
 import { IBookingRepository } from "../../interface/Repository/bookingRepository";
 import { IWorkspace } from "../../entities/workspaceEntity";
 import { ISavedWorkspace } from "../../entities/savedWorkspaceEntity";
 import { IReview } from "../../entities/reviewEntity";
+
+interface Workspace {
+  _id: Types.ObjectId;
+  workspaceName: string;
+  capacity: number;
+}
+
+interface User {
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+}
+
+export interface PopulatedBooking {
+  workspaceId: Workspace;
+  userId: User;
+  seats: number;
+  status: string;
+  subTotal: number;
+}
 
 export default class bookingRepository implements IBookingRepository {
   private booking: Model<IBooking>;
@@ -255,7 +275,7 @@ export default class bookingRepository implements IBookingRepository {
         throw new Error("Not enough capacity in the workspace");
       }
 
-      workspace.remainingSeats! += seats;
+      workspace.bookedSeats! += seats;
       
       await workspace.save();
 
@@ -274,6 +294,30 @@ export default class bookingRepository implements IBookingRepository {
       return updatedBooking;
     } catch (error) {
       throw error;
+    }
+  }
+  async findBookingById(bookingId: string): Promise<PopulatedBooking|null> {
+    try {
+      const booking = await this.booking.findById(bookingId)
+      .populate("workspaceId")
+      .populate("userId")
+      .lean<PopulatedBooking>()
+      .exec();
+      return booking
+    } catch (error) {
+      throw error
+    }
+  }
+  async updateCancelledStatus(bookingId: string, status: string) {
+    try {
+      return await this.booking.findByIdAndUpdate(
+        bookingId,
+        { status },
+        { new: true }
+      )
+    } catch (error) {
+      console.log(error)
+      throw error
     }
   }
 }

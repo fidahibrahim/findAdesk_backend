@@ -2,14 +2,17 @@ import { Model, Types } from "mongoose";
 import { AddReviewRequest, IReview, PopulatedReview } from "../../entities/reviewEntity";
 import { IReviewRepository } from "../../interface/Repository/reviewRepository";
 import { IBooking } from "../../entities/bookingEntity";
+import { IWorkspace } from "../../entities/workspaceEntity";
 
 export default class reviewRepository implements IReviewRepository {
     private review: Model<IReview>;
-    private booking: Model<IBooking>
+    private booking: Model<IBooking>;
+    private workspace: Model<IWorkspace>
 
-    constructor(review: Model<IReview>, booking: Model<IBooking>) {
+    constructor(review: Model<IReview>, booking: Model<IBooking>, workspace: Model<IWorkspace>) {
         this.review = review,
-            this.booking = booking
+            this.booking = booking,
+            this.workspace = workspace
     }
 
     async findByWorkspaceId(workspaceId: string) {
@@ -133,7 +136,7 @@ export default class reviewRepository implements IReviewRepository {
                         ...rating,
                         userId: {
                             firstName: rating.userId.name,
-                            lastName: "", 
+                            lastName: "",
                             profileImage: rating.userId.image
                         }
                     };
@@ -141,6 +144,45 @@ export default class reviewRepository implements IReviewRepository {
             };
 
             return transformedData;
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async getWorkspaceReviews(ownerId: string): Promise<any> {
+        try {
+            console.log(ownerId, 'owneri d get in repo')
+            const workspaces = await this.workspace.find({ ownerId: new Types.ObjectId(ownerId) });
+            console.log(workspaces,'workspaces get in repo')
+            const workspaceIds = workspaces.map(workspace => workspace._id);
+            console.log(workspaceIds, 'ids of workspace')
+            const reviews = await this.review.find({
+                workspaceId: { $in: workspaceIds }
+            }).populate({
+                path: 'ratings.userId',
+                select: 'name email image'
+            })
+            const reviewMap = new Map();
+            reviews.forEach(review => {
+                reviewMap.set(review.workspaceId.toString(), review.ratings);
+            });
+            const workspacesWithReviews = workspaces.map(workspace => {
+                const workspaceObj = workspace.toObject();
+                const workspaceId = workspace._id.toString();
+                const formattedReviews = (reviewMap.get(workspaceId) || []).map((rating: any) => ({
+                    userId: rating.userId,
+                    rating: rating.rating,
+                    review: rating.review || '',
+                    createdAt: rating.createdAt
+                }));
+
+                return {
+                    ...workspaceObj,
+                    reviews: formattedReviews
+                };
+            });
+            console.log(workspacesWithReviews,'review worksapces in repo')
+            return workspacesWithReviews;
         } catch (error) {
             console.log(error)
             throw error

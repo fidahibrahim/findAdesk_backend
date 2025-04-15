@@ -6,6 +6,7 @@ import Iuser from "../entities/userEntity";
 import IOwner from "../entities/ownerEntity";
 import IotpService from "../interface/Utils/otpService";
 import { IBookingRepository } from "../interface/Repository/bookingRepository";
+import { IWorkspace } from "../entities/workspaceEntity";
 
 
 export default class adminUseCase implements IadminUseCase {
@@ -193,6 +194,62 @@ export default class adminUseCase implements IadminUseCase {
             }
 
             return { totalRevenue, filteredRevenue, bookings, totalCount };
+        } catch (error) {
+            throw error
+        }
+    }
+    async getUserCount() {
+        try {
+            const response = await this.adminRepository.getUserCount()
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async getWorkspaceCount() {
+        try {
+            const response = await this.adminRepository.getWorkspaceCount()
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async getRecentUsers() {
+        try {
+            const response = await this.adminRepository.getRecentUsers()
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async getRecentWorkspaces() {
+        try {
+            const response = await this.adminRepository.getRecentWorkspaces()
+            return response
+        } catch (error) {
+            throw error
+        }
+    }
+    async getTotalRevenue() {
+        try {
+            const totalRevenue = await this.adminRepository.calculateTotalRevenue();
+            return totalRevenue;
+        } catch (error) {
+            throw error
+        }
+    }
+    async getMonthlyRevenue() {
+        try {
+            const monthlyRevenue = await this.adminRepository.getMonthlyRevenue();
+            return monthlyRevenue;
+        } catch (error) {
+            throw error
+        }
+    }
+    async getYearlyRevenue(): Promise<any> {
+        try {
+            const yearlyRevenue = await this.adminRepository.getYearlyRevenue();
+            return yearlyRevenue;
         } catch (error) {
             throw error
         }

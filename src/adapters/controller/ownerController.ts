@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { handleError, handleSuccess } from "../../infrastructure/utils/responseHandler";
 import { ResponseMessage } from "../../constants/responseMssg";
 import { HttpStatusCode } from "../../constants/httpStatusCode";
+import { AuthenticatedRequest } from "../../infrastructure/middleware/ownerAuth";
 
 export class ownerController {
     private ownerUseCase: IOwnerUseCase
@@ -13,6 +14,7 @@ export class ownerController {
         this.verifyOtp = this.verifyOtp.bind(this)
         this.resendOtp = this.resendOtp.bind(this)
         this.login = this.login.bind(this)
+        this.getDashboardData = this.getDashboardData.bind(this)
     }
 
     async register(req: Request, res: Response): Promise<void> {
@@ -121,6 +123,19 @@ export class ownerController {
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.LOGOUT_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+
+    async getDashboardData(req: AuthenticatedRequest, res: Response) {
+        try {
+            const ownerId = req.owner?.userId
+            const response = await this.ownerUseCase.getDashboardData(ownerId!)
+            console.log(response, 'response in controller')
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.FETCH_DASHBOARD, HttpStatusCode.OK, response))
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.FETCH_DASHBOARD_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
 

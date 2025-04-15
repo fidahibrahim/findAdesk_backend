@@ -9,4 +9,5 @@ export interface IBooking {
     listBookings(req: Request, res: Response): Promise<void>
     getBookingDetailsOwner(req: Request, res: Response): Promise<void>
     bookingConfirmDetails(req: Request, res: Response): Promise<void>
+    cancelBooking(req: Request, res: Response): Promise<void>
 }

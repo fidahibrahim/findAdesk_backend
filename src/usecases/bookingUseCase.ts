@@ -2,6 +2,7 @@ import { IBooking } from "../entities/bookingEntity";
 import { IBookingRepository } from "../interface/Repository/bookingRepository";
 import { IReviewRepository } from "../interface/Repository/reviewRepository";
 import { IuserRepository } from "../interface/Repository/userRepository";
+import { IWalletRepository } from "../interface/Repository/walletRepository";
 import { IWorkspaceRepository } from "../interface/Repository/workspaceRepository";
 import { IBookingUseCase, AvailabilityRequest, CreateBookingData, bookingDetails } from "../interface/Usecase/IBookingUseCase";
 
@@ -10,17 +11,20 @@ export default class bookingUseCase implements IBookingUseCase {
     private workspaceRepository: IWorkspaceRepository;
     private userRepository: IuserRepository;
     private reviewRepository: IReviewRepository;
+    private walletRepository: IWalletRepository;
 
     constructor(
         bookingRepository: IBookingRepository,
         workspaceRepository: IWorkspaceRepository,
         userRepository: IuserRepository,
-        reviewRepository: IReviewRepository
+        reviewRepository: IReviewRepository,
+        walletRepository: IWalletRepository,
     ) {
         this.bookingRepository = bookingRepository
         this.workspaceRepository = workspaceRepository
         this.userRepository = userRepository
         this.reviewRepository = reviewRepository
+        this.walletRepository = walletRepository
     }
 
     async checkAvailability(data: AvailabilityRequest) {
@@ -159,8 +163,34 @@ export default class bookingUseCase implements IBookingUseCase {
             );
             return response;
         } catch (error) {
-            console.log(error);
             throw error;
+        }
+    }
+    async cancelBooking(bookingId: string): Promise<any> {
+        try {
+            const booking = await this.bookingRepository.findBookingById(bookingId)
+
+            if (booking?.status === "cancelled") {
+                throw new Error("Booking is already cancelled");
+            }
+            if (typeof booking?.seats !== 'number' || isNaN(booking.seats)) {
+                throw new Error(`Invalid booking seats: ${booking?.seats}`);
+            }
+            const workspaceId = booking.workspaceId._id.toString();
+            const userId = booking.userId._id.toString();
+            await this.workspaceRepository.updateBookedSeats(
+                workspaceId,
+                booking?.seats
+            )
+            await this.walletRepository.updateWalletAmount(
+                userId,
+                booking?.subTotal
+            )
+            const updatedBooking = await this.bookingRepository.updateCancelledStatus(bookingId, 'cancelled')
+            console.log(updatedBooking,'updattdebooking in usecase')
+            return updatedBooking
+        } catch (error) {
+            throw error
         }
     }
 }

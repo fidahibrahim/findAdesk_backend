@@ -16,8 +16,15 @@ export default interface IadminRepository {
     updateStatus(workspaceId: string, status: string): Promise<IWorkspace | null>
     workspaceDetails(workspaceId: string): Promise<IWorkspace | null>
     getServiceFeeSum(startDate?: Date, endDate?: Date): Promise<any>
-    getAllBookings(page: number, limit: number ): Promise<IBooking[]>
+    getAllBookings(page: number, limit: number): Promise<IBooking[]>
     getAllBookingsCount(): Promise<any>
-    getBookingsWithinDateRange(startDate: Date, endDate: Date, page: number , limit: number ): Promise<IBooking[]>
+    getBookingsWithinDateRange(startDate: Date, endDate: Date, page: number, limit: number): Promise<IBooking[]>
     getBookingsCountWithinDateRange(startDate: Date, endDate: Date): Promise<any>
+    getUserCount(): Promise<number>
+    getWorkspaceCount(): Promise<number>
+    getRecentUsers(): Promise<Iuser[]>
+    getRecentWorkspaces(): Promise<IWorkspace[]>
+    calculateTotalRevenue(): Promise<number>
+    getMonthlyRevenue(): Promise<any>
+    getYearlyRevenue(): Promise<any>
 }

@@ -34,4 +34,13 @@ export default class reviewUseCase implements IReviewUseCase {
             throw error
         }
     }
+
+    async getWorkspaceReviews(ownerId: string) {
+        try {
+            const workspaceWithReviews = await this.reviewRepository.getWorkspaceReviews(ownerId)
+            return workspaceWithReviews
+        } catch (error) {
+            throw error
+        }
+    }
 }

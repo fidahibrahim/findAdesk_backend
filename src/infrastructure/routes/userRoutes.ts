@@ -20,6 +20,10 @@ import reviewRepository from '../../adapters/repository/reviewRepository'
 import reviewUseCase from '../../usecases/reviewUseCase'
 import { reviewController } from '../../adapters/controller/reviewController'
 import reviewModel from '../model/reviewSchema'
+import walletRepository from '../../adapters/repository/walletRepository'
+import Wallet from '../model/walletSchema'
+import walletUseCase from '../../usecases/walletUseCase'
+import { walletController } from '../../adapters/controller/walletController'
 
 const userRouter: Router = express.Router()
 const upload = multer()
@@ -31,8 +35,8 @@ const jwtService = new JwtToken()
 const UserRepository = new userRepository(users, OtpSchema, workspaceModel, SavedWorkspace, reviewModel)
 const BookingRepository = new bookingRepository(bookingModel, workspaceModel, SavedWorkspace, reviewModel)
 const WorkspaceRepository = new workspaceRepository(workspaceModel, SavedWorkspace)
-const ReviewRepository = new reviewRepository(reviewModel, bookingModel)
-
+const ReviewRepository = new reviewRepository(reviewModel, bookingModel, workspaceModel)
+const WalletRepository = new walletRepository(Wallet)
 
 const UserUseCase = new userUseCase(
     UserRepository,
@@ -46,15 +50,20 @@ const BookingUseCase = new bookingUseCase(
     BookingRepository,
     WorkspaceRepository,
     UserRepository,
-    ReviewRepository
+    ReviewRepository,
+    WalletRepository
 )
 const ReviewUseCase = new reviewUseCase(
     ReviewRepository
+)
+const WalletUseCase = new walletUseCase(
+    WalletRepository
 )
 
 const userController = new UserController(UserUseCase)
 const BookingController = new bookingController(BookingUseCase)
 const ReviewController = new reviewController(ReviewUseCase)
+const WalletController = new walletController(WalletUseCase)
 
 // user authentication
 userRouter.post('/register', userController.register)
@@ -82,11 +91,16 @@ userRouter.get("/bookings/details", authenticateUser, BookingController.getBooki
 userRouter.post('/bookings/createStripeSession', BookingController.createStripeSession)
 userRouter.post('/webhook', express.raw({ type: "application/json" }), BookingController.stripeWebhook)
 userRouter.get('/bookingConfirmDetails', authenticateUser, BookingController.bookingConfirmDetails)
+userRouter.patch('/booking/cancel', authenticateUser, BookingController.cancelBooking)
+
 userRouter.post('/saveWorkspace', authenticateUser, userController.saveWorkspace)
 
 //Review
 userRouter.post('/addReview', authenticateUser, ReviewController.addReview)
 userRouter.get('/getReviews', authenticateUser, ReviewController.getReviews)
+
+userRouter.get('/wallet', authenticateUser, WalletController.getWallet)
+userRouter.post('/bookings/walletPayment', WalletController.processWalletPayment)
 
 
 export default userRouter

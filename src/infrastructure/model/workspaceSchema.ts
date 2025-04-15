@@ -23,7 +23,7 @@ const workspaceSchema = new Schema ({
         type: Number,
         required: true
     },
-    remainingSeats: {
+    bookedSeats: {
         type: Number,
         default: 0
     },

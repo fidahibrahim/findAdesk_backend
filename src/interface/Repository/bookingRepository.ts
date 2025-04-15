@@ -1,3 +1,4 @@
+import { PopulatedBooking } from "../../adapters/repository/bookingRepository";
 import { checkoutBookingDetails, IBooking, ICreateBooking } from "../../entities/bookingEntity";
 
 export interface IBookingRepository {
@@ -14,4 +15,6 @@ export interface IBookingRepository {
         paymentMethod: string,
         worksapceId: string
     ): Promise<any>;
+    findBookingById(bookingId: string): Promise<PopulatedBooking|null>
+    updateCancelledStatus(bookingId: string, status: string): Promise<IBooking | null>
 }
