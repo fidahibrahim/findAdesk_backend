@@ -57,7 +57,8 @@ const ReviewUseCase = new reviewUseCase(
     ReviewRepository
 )
 const WalletUseCase = new walletUseCase(
-    WalletRepository
+    WalletRepository,
+    BookingRepository
 )
 
 const userController = new UserController(UserUseCase)
@@ -99,8 +100,11 @@ userRouter.post('/saveWorkspace', authenticateUser, userController.saveWorkspace
 userRouter.post('/addReview', authenticateUser, ReviewController.addReview)
 userRouter.get('/getReviews', authenticateUser, ReviewController.getReviews)
 
+
 userRouter.get('/wallet', authenticateUser, WalletController.getWallet)
-userRouter.post('/bookings/walletPayment', WalletController.processWalletPayment)
+userRouter.post('/bookings/walletPayment', authenticateUser, WalletController.processWalletPayment)
+
+userRouter.post('/subscription/createStripeSession', authenticateUser, userController.addSubscription)
 
 
 export default userRouter

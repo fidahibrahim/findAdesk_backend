@@ -25,6 +25,7 @@ export class UserController {
         this.workspaceDetails = this.workspaceDetails.bind(this)
         this.getBookingHistory = this.getBookingHistory.bind(this)
         this.saveWorkspace = this.saveWorkspace.bind(this)
+        this.addSubscription = this.addSubscription.bind(this)
     }
     async register(req: Request, res: Response): Promise<void> {
         try {
@@ -265,7 +266,7 @@ export class UserController {
     async workspaceDetails(req: AuthenticatedRequestUser, res: Response) {
         try {
             const workspaceId = req.query.workspaceId as string
-            const userId = req.user?.userId; 
+            const userId = req.user?.userId;
             const response = await this.userUseCase.workspaceDetails(workspaceId, userId)
             if (response) {
                 res.status(HttpStatusCode.OK)
@@ -284,9 +285,19 @@ export class UserController {
         try {
             const { workspaceId, isSaved } = req.body
             const userId = req.user?.userId
-            const result = await this.userUseCase.saveWorkspace(userId, workspaceId, isSaved) 
+            const result = await this.userUseCase.saveWorkspace(userId, workspaceId, isSaved)
             res.status(HttpStatusCode.OK)
-                    .json(handleSuccess(ResponseMessage.SAVE_WORKSPACE_SUCCESS, HttpStatusCode.OK, result));
+                .json(handleSuccess(ResponseMessage.SAVE_WORKSPACE_SUCCESS, HttpStatusCode.OK, result));
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+                .json(handleError(ResponseMessage.SAVE_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+        }
+    }
+    async addSubscription(req: Request, res: Response) {
+        try {
+
+            res.status(HttpStatusCode.OK)
+                .json(handleSuccess(ResponseMessage.SAVE_WORKSPACE_SUCCESS, HttpStatusCode.OK));
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.SAVE_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))

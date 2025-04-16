@@ -13,6 +13,7 @@ export class reviewController {
         this.reviewUseCase = reviewUseCase
         this.addReview = this.addReview.bind(this)
         this.getReviews = this.getReviews.bind(this)
+        this.getAllReviews = this.getAllReviews.bind(this)
     }
 
     async addReview(req: AuthenticatedRequestUser, res: Response) {
@@ -49,9 +50,8 @@ export class reviewController {
     async getAllReviews(req: AuthenticatedRequest, res: Response) {
         try {
             const ownerId = req.owner?.userId
-            console.log(ownerId,'ownerid in controller')
-            const workspaces = await this.reviewUseCase.getWorkspaceReviews(ownerId!)
-            console.log(workspaces, 'workspaces in controller')
+            console.log(ownerId,'ownerId in controller')
+            const workspaces = await this.reviewUseCase.getWorkspaceReviews(ownerId)
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.GET_REVIEW_SUCCESS, HttpStatusCode.OK, workspaces))
         } catch (error) {

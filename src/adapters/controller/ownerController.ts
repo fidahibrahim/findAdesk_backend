@@ -130,7 +130,6 @@ export class ownerController {
         try {
             const ownerId = req.owner?.userId
             const response = await this.ownerUseCase.getDashboardData(ownerId!)
-            console.log(response, 'response in controller')
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.FETCH_DASHBOARD, HttpStatusCode.OK, response))
         } catch (error) {

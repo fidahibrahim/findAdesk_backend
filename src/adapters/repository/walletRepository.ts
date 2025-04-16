@@ -1,6 +1,6 @@
 import mongoose, { Model } from "mongoose";
 import { IWalletRepository } from "../../interface/Repository/walletRepository";
-import { IWallet } from "../../entities/walletEntity";
+import { IWallet, WalletTransaction } from "../../entities/walletEntity";
 import { v4 as uuidv4 } from "uuid";
 
 export default class walletRepository implements IWalletRepository {
@@ -67,6 +67,23 @@ export default class walletRepository implements IWalletRepository {
                 { new: true }
             )
         } catch (error) {
+            throw error
+        }
+    }
+
+    async updateWalletBalance(userId: string, newBalance: number, transaction: WalletTransaction) {
+        try {
+            const updatedWallet = await this.wallet.findOneAndUpdate(
+                { userId },
+                {
+                    balance: newBalance,
+                    $push: { transactions: transaction }
+                },
+                { new: true }
+            )
+            return updatedWallet;
+        } catch (error) {
+            console.log(error)
             throw error
         }
     }

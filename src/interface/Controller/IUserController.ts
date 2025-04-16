@@ -31,4 +31,5 @@ export interface IUserController{
     filterWorkspaces(req: Request, res: Response): Promise<void>
     workspaceDetails(req: Request, res: Response): Promise<void>
     saveWorkspace(req: Request, res: Response): Promise<void>
+    addSubscription(req: Request, res: Response): Promise<void>
 }

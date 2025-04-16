@@ -151,11 +151,8 @@ export default class reviewRepository implements IReviewRepository {
 
     async getWorkspaceReviews(ownerId: string): Promise<any> {
         try {
-            console.log(ownerId, 'owneri d get in repo')
             const workspaces = await this.workspace.find({ ownerId: new Types.ObjectId(ownerId) });
-            console.log(workspaces,'workspaces get in repo')
             const workspaceIds = workspaces.map(workspace => workspace._id);
-            console.log(workspaceIds, 'ids of workspace')
             const reviews = await this.review.find({
                 workspaceId: { $in: workspaceIds }
             }).populate({
@@ -181,7 +178,6 @@ export default class reviewRepository implements IReviewRepository {
                     reviews: formattedReviews
                 };
             });
-            console.log(workspacesWithReviews,'review worksapces in repo')
             return workspacesWithReviews;
         } catch (error) {
             console.log(error)
