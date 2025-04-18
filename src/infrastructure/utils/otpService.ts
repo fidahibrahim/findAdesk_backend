@@ -25,7 +25,7 @@ export default class OtpService implements IotpService {
                 theme: "default",
                 product: {
                     name: "findAdesk",
-                    link: "http://localhost:5000/"
+                    link: `${process.env.SUCCESS_URL_PRO}/`
                 }
             })
 
@@ -38,7 +38,7 @@ export default class OtpService implements IotpService {
                         button: {
                             color: "#22BC66",
                             text: `your OTP is ${otp}`,
-                            link: 'http://localhost:5173/otp'
+                            link: `${process.env.SUCCESS_URL_PRO}/otp`
                         }
                     },
                     outro: 'If you did not request this mail, you can savely ignore it.'
@@ -74,7 +74,7 @@ export default class OtpService implements IotpService {
                 theme: "default",
                 product: {
                     name: "findAdesk",
-                    link: "http://localhost:5000/"
+                    link: `${process.env.SUCCESS_URL_PRO}/`
                 }
             })
             const emailContent = {
@@ -123,7 +123,7 @@ export default class OtpService implements IotpService {
                 theme: "default",
                 product: {
                     name: "findAdesk",
-                    link: "http://localhost:5000/",
+                    link: `${process.env.SUCCESS_URL_PRO}/`,
                 },
             });
 

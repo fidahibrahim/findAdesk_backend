@@ -160,7 +160,7 @@ class userUseCase {
             };
             const exp = "3m";
             const token = await this.jwtService.generateTokenForgot(data, exp);
-            const resetLink = `http://localhost:5000/resetPassword/${token}`;
+            const resetLink = `${process.env.SUCCESS_URL_PRO}/resetPassword/${token}`;
             await this.otpService.sendEmailForgotPassword(resetLink, user.email);
             return "Email sended to the user";
         }

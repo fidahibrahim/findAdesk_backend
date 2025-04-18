@@ -348,8 +348,8 @@ class UserController {
                     planType: planType,
                     amount: amount,
                 },
-                success_url: 'http://localhost:5000/subscription-success?session_id={CHECKOUT_SESSION_ID}',
-                cancel_url: 'http://localhost:5000/profile',
+                success_url: `${process.env.SUCCESS_URL_PRO}/subscription-success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${process.env.SUCCESS_URL_PRO}/profile`,
             });
             res.status(httpStatusCode_1.HttpStatusCode.OK).json((0, responseHandler_1.handleSuccess)(responseMssg_1.ResponseMessage.SUBSCRIPTION_SESSION, httpStatusCode_1.HttpStatusCode.OK, session));
         }

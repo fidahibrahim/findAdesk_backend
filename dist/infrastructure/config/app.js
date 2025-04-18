@@ -34,7 +34,7 @@ app.use("/api/webhook", express_1.default.raw({ type: "application/json" }));
 app.use(express_1.default.json({ limit: "100mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "100mb" }));
 app.use((0, cors_1.default)({
-    origin: "http://localhost:5000",
+    origin: "https://find-adesk-frontend.vercel.app",
     credentials: true
 }));
 //Routes 

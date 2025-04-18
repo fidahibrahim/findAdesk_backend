@@ -27,7 +27,7 @@ class OtpService {
                 theme: "default",
                 product: {
                     name: "findAdesk",
-                    link: "http://localhost:5000/"
+                    link: `${process.env.SUCCESS_URL_PRO}/`
                 }
             });
             const resp = {
@@ -39,7 +39,7 @@ class OtpService {
                         button: {
                             color: "#22BC66",
                             text: `your OTP is ${otp}`,
-                            link: 'http://localhost:5173/otp'
+                            link: `${process.env.SUCCESS_URL_PRO}/otp`
                         }
                     },
                     outro: 'If you did not request this mail, you can savely ignore it.'
@@ -75,7 +75,7 @@ class OtpService {
                 theme: "default",
                 product: {
                     name: "findAdesk",
-                    link: "http://localhost:5000/"
+                    link: `${process.env.SUCCESS_URL_PRO}/`
                 }
             });
             const emailContent = {
@@ -123,7 +123,7 @@ class OtpService {
                 theme: "default",
                 product: {
                     name: "findAdesk",
-                    link: "http://localhost:5000/",
+                    link: `${process.env.SUCCESS_URL_PRO}/`,
                 },
             });
             let intro = "";

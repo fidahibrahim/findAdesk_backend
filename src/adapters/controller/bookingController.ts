@@ -98,8 +98,8 @@ export class bookingController {
           seat: payload.seats,
           worksapceId: workspaceId,
         },
-        success_url: `http://localhost:5000/bookingConfirmation/${payload.bookingId}`,
-        cancel_url: `http://localhost:5000/checkout/${payload.bookingId}`,
+        success_url: `${process.env.SUCCESS_URL_PRO}/bookingConfirmation/${payload.bookingId}`,
+        cancel_url: `${process.env.SUCCESS_URL_PRO}/checkout/${payload.bookingId}`,
       });
       res.status(HttpStatusCode.OK).json(handleSuccess(ResponseMessage.BOOKING_CONFIRMATION, HttpStatusCode.OK, session));
     } catch (error) {
