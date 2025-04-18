@@ -27,7 +27,7 @@ class OtpService {
                 theme: "default",
                 product: {
                     name: "findAdesk",
-                    link: "https://mailgen.js/"
+                    link: "http://localhost:5000/"
                 }
             });
             const resp = {
@@ -56,6 +56,126 @@ class OtpService {
         }
         catch (error) {
             console.error("Error sending password reset email:", error);
+            throw error;
+        }
+    }
+    async sendEmailForgotPassword(resetLink, email) {
+        try {
+            const transporter = nodemailer_1.default.createTransport({
+                service: "gmail",
+                host: "smtp.gmail.com",
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.NODE_MAILER_EMAIL,
+                    pass: process.env.NODE_MAILER_PASS,
+                },
+            });
+            const mailGenerator = new mailgen_1.default({
+                theme: "default",
+                product: {
+                    name: "findAdesk",
+                    link: "http://localhost:5000/"
+                }
+            });
+            const emailContent = {
+                body: {
+                    name: "User",
+                    intro: "You are receiving this email because we received a password reset request from your account.",
+                    action: {
+                        instructions: "To reset your password, here is the Reset Link:",
+                        button: {
+                            color: "#22BC66",
+                            text: "Reset Password",
+                            link: resetLink,
+                        },
+                    },
+                    outro: "If you didn't request a password reset, no further action is required.",
+                },
+            };
+            const html = mailGenerator.generate(emailContent);
+            const message = {
+                from: process.env.NODE_MAILER_EMAIL,
+                to: email,
+                subject: 'findAdesk Password Reset',
+                html: html
+            };
+            await transporter.sendMail(message);
+        }
+        catch (error) {
+            console.error("Error sending password reset email:", error);
+            throw error;
+        }
+    }
+    async sendEmailToOwner(email, status, name) {
+        try {
+            const transporter = nodemailer_1.default.createTransport({
+                service: "gmail",
+                host: "smtp.gmail.com",
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.NODE_MAILER_EMAIL,
+                    pass: process.env.NODE_MAILER_PASS,
+                },
+            });
+            const mailGenerator = new mailgen_1.default({
+                theme: "default",
+                product: {
+                    name: "findAdesk",
+                    link: "http://localhost:5000/",
+                },
+            });
+            let intro = "";
+            let outro = "";
+            if (status === "Approved") {
+                intro = "We are thrilled to inform you that your workspace submission has been approved!";
+                outro = "You can now manage your workspace and start welcoming users. If you have any questions, feel free to contact us at support@findadesk.com.";
+            }
+            else if (status === "Rejected") {
+                intro = "We regret to inform you that your workspace submission has been rejected.";
+                outro = "Please review the submission guidelines and make necessary adjustments. If you have any questions, feel free to contact us at support@findadesk.com.";
+            }
+            const emailContent = {
+                body: {
+                    name: `${name}`,
+                    intro: intro,
+                    outro: outro,
+                },
+            };
+            const html = mailGenerator.generate(emailContent);
+            const message = {
+                from: process.env.NODE_MAILER_EMAIL,
+                to: email,
+                subject: `findAdesk Workspace Submission ${status}`,
+                html: html,
+            };
+            await transporter.sendMail(message);
+        }
+        catch (error) {
+            console.error("Error sending password reset email:", error);
+            throw error;
+        }
+    }
+    async contactEmailService(name, email, subject, message) {
+        try {
+            const transporter = nodemailer_1.default.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.NODE_MAILER_EMAIL,
+                    pass: process.env.NODE_MAILER_PASS,
+                },
+            });
+            const mailOptions = {
+                from: email,
+                to: process.env.NODE_MAILER_EMAIL,
+                subject: `New Contact Form Submission: ${subject}`,
+                text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
+            };
+            await transporter.sendMail(mailOptions);
+        }
+        catch (error) {
+            console.error("Error sending email:", error);
             throw error;
         }
     }

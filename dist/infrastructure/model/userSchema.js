@@ -37,27 +37,52 @@ const mongoose_1 = __importStar(require("mongoose"));
 const userSchema = new mongoose_1.Schema({
     name: {
         type: String,
-        required: true
+        required: true,
     },
     email: {
         type: String,
-        required: true
+        required: true,
     },
     password: {
         type: String,
-        required: true
+    },
+    mobile: {
+        type: String,
+    },
+    image: {
+        type: String,
+        default: " https://github.com/shadcn.png ",
     },
     isVerified: {
         type: Boolean,
         default: false,
-        required: true
+        required: true,
+    },
+    isBlocked: {
+        type: Boolean,
+        default: false,
+        required: true,
+    },
+    isSubscribed: {
+        type: Boolean,
+        default: false,
+    },
+    subscriptionType: {
+        type: String,
+        default: "",
+    },
+    subscriptionStartDate: {
+        type: Date
+    },
+    subscriptionEndDate: {
+        type: Date
     },
     isAdmin: {
         type: Boolean,
         default: false,
-        required: true
-    }
-});
-const userModel = mongoose_1.default.model('User', userSchema);
+        required: true,
+    },
+}, { timestamps: true });
+const userModel = mongoose_1.default.model("User", userSchema);
 exports.default = userModel;
 //# sourceMappingURL=userSchema.js.map

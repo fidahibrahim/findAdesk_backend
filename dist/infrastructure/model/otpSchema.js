@@ -48,6 +48,8 @@ const otpSchema = new mongoose_1.Schema({
         required: true,
         default: Date.now
     }
+}, {
+    timestamps: true
 });
 otpSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 });
 const OtpModel = mongoose_1.default.model("Otp", otpSchema);
