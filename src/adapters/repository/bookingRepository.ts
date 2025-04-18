@@ -15,6 +15,7 @@ interface User {
   _id: Types.ObjectId;
   name: string;
   email: string;
+  isSubscribed?: boolean;
 }
 
 export interface PopulatedBooking {
@@ -23,6 +24,9 @@ export interface PopulatedBooking {
   seats: number;
   status: string;
   subTotal: number;
+  grandTotal: number;
+  startTime: Date;  
+  endTime: Date; 
 }
 
 export default class bookingRepository implements IBookingRepository {
@@ -199,7 +203,7 @@ export default class bookingRepository implements IBookingRepository {
       const response = await this.booking.findById(bookingId)
         .populate({
           path: 'userId',
-          select: 'name email mobile'
+          select: 'name email mobile isSubscribed'
         })
         .populate({
           path: 'workspaceId',
@@ -300,7 +304,10 @@ export default class bookingRepository implements IBookingRepository {
     try {
       const booking = await this.booking.findById(bookingId)
       .populate("workspaceId")
-      .populate("userId")
+      .populate({
+        path: "userId",
+        select: "_id name email isSubscribed" 
+      })
       .lean<PopulatedBooking>()
       .exec();
       return booking

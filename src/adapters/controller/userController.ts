@@ -4,6 +4,7 @@ import { AuthenticatedRequestUser } from "../../infrastructure/middleware/userAu
 import { handleError, handleErrorr, handleSuccess, handleSuccesss, sendResponse } from "../../infrastructure/utils/responseHandler";
 import { IuserUseCase } from "../../interface/Usecase/IUserUseCase";
 import { Request, Response } from "express"
+import Stripe from "stripe";
 
 export class UserController {
     private userUseCase: IuserUseCase
@@ -26,6 +27,7 @@ export class UserController {
         this.getBookingHistory = this.getBookingHistory.bind(this)
         this.saveWorkspace = this.saveWorkspace.bind(this)
         this.addSubscription = this.addSubscription.bind(this)
+        this.verifySubscription = this.verifySubscription.bind(this)
     }
     async register(req: Request, res: Response): Promise<void> {
         try {
@@ -293,14 +295,86 @@ export class UserController {
                 .json(handleError(ResponseMessage.SAVE_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }
     }
-    async addSubscription(req: Request, res: Response) {
+    async addSubscription(req: AuthenticatedRequestUser, res: Response) {
         try {
-
-            res.status(HttpStatusCode.OK)
-                .json(handleSuccess(ResponseMessage.SAVE_WORKSPACE_SUCCESS, HttpStatusCode.OK));
+            const { planType, amount } = req.body;
+            const userId = req.user?.userId;
+            if (!process.env.STRIPE_SECRET_KEY) {
+                throw new Error(
+                    "STRIPE_SECRET_KEY is not defined in environment variables"
+                );
+            }
+            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ["card"],
+                line_items: [
+                    {
+                        price_data: {
+                            currency: "inr",
+                            product_data: {
+                                name: planType,
+                            },
+                            unit_amount: amount * 100,
+                        },
+                        quantity: 1,
+                    },
+                ],
+                mode: "payment",
+                metadata: {
+                    userId: userId!,
+                    planType: planType,
+                    amount: amount,
+                },
+                success_url: 'http://localhost:5000/subscription-success?session_id={CHECKOUT_SESSION_ID}',
+                cancel_url: 'http://localhost:5000/profile',
+            });
+            res.status(HttpStatusCode.OK).json(handleSuccess(ResponseMessage.SUBSCRIPTION_SESSION, HttpStatusCode.OK, session));
         } catch (error) {
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-                .json(handleError(ResponseMessage.SAVE_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(handleError(ResponseMessage.SAVE_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR));
+        }
+    }
+    async verifySubscription(req: Request, res: Response) {
+        try {
+            const { sessionId } = req.params;
+            if (!process.env.STRIPE_SECRET_KEY) {
+                throw new Error(
+                    "STRIPE_SECRET_KEY is not defined in environment variables"
+                );
+            }
+            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+            const session = await stripe.checkout.sessions.retrieve(sessionId);
+            const userId = session.metadata?.userId;
+
+            const userDetails = await this.userUseCase.userDetails(userId!);
+
+            if (session.payment_status === "paid") {
+                const planType = session.metadata?.planType;
+                const subscriptionStartDate = new Date();
+                let subscriptionEndDate = new Date();
+                
+                if (planType === 'monthly') {
+                    subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+                } else if (planType === 'yearly') {
+                    subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
+                }
+                
+                userDetails.isSubscribed = true;
+                userDetails.subscriptionType = planType;
+                userDetails.subscriptionStartDate = subscriptionStartDate;
+                userDetails.subscriptionEndDate = subscriptionEndDate;
+                
+                await userDetails.save();
+                
+                const result = {
+                    planType: planType,
+                    amount: parseInt(session.metadata?.amount!),
+                    subscriptionEndDate: subscriptionEndDate
+                };
+                
+                res.status(HttpStatusCode.OK).json(handleSuccess(ResponseMessage.SUBSCRIPTION_VERIFIED, HttpStatusCode.OK, result));
+            }
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(handleError(ResponseMessage.SAVE_WORKSPACE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR));
         }
     }
 }

@@ -48,6 +48,8 @@ export enum ResponseMessage {
     FETCH_PROFILE_FAILURE = "Failed to fetch user profile",
     UPDATE_PROFILE_SUCCESS = "Profile updated successfully",
     UPDATE_PROFILE_FAILURE = "Failed to update",
+    SUBSCRIPTION_SESSION="subscription session created",
+    SUBSCRIPTION_VERIFIED="subscription successfully completed",
   
     //owner
     OWNER_REGISTER_SUCCESS = "Owner registered successfully!",
@@ -95,6 +97,7 @@ export enum ResponseMessage {
     //Wallet 
     FETCH_WALLET = 'Wallet fetched successfully',
     FETCH_WALLET_FAILURE = 'Failed to fetch wallet',
+
     
   }
   

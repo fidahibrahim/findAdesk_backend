@@ -105,6 +105,7 @@ userRouter.get('/wallet', authenticateUser, WalletController.getWallet)
 userRouter.post('/bookings/walletPayment', authenticateUser, WalletController.processWalletPayment)
 
 userRouter.post('/subscription/createStripeSession', authenticateUser, userController.addSubscription)
+userRouter.post('/verifySubscription/:sessionId', authenticateUser, userController.verifySubscription)
 
 
 export default userRouter

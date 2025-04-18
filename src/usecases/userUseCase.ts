@@ -223,12 +223,12 @@ export default class userUseCase implements IuserUseCase {
     }
     async editProfile(data: Iuser | null) {
         try {
-            if (data?.image && typeof data.image !== "string") { 
-                const { originalname, mimetype, buffer } = data.image as Express.Multer.File; 
+            if (data?.image && typeof data.image !== "string") {
+                const { originalname, mimetype, buffer } = data.image as Express.Multer.File;
                 const optimizedImage = await sharp(buffer).resize(500).toBuffer();
                 await sendObjectToS3(originalname, mimetype, buffer, optimizedImage);
                 const imageUrl = await createImageUrl(originalname);
-                data.image = imageUrl; 
+                data.image = imageUrl;
             }
             const response = await this.userRepository.updateProfile(data)
             return response
@@ -242,7 +242,7 @@ export default class userUseCase implements IuserUseCase {
             if (!user) {
                 throw new Error(ResponseMessage.USER_NOT_FOUND);
             }
-            const isPasswordValid = await this.hashingService.compare(currentPassword, user.password) 
+            const isPasswordValid = await this.hashingService.compare(currentPassword, user.password)
             if (!isPasswordValid) {
                 throw new Error(ResponseMessage.INVALID_PASSWORD);
             }
@@ -250,7 +250,7 @@ export default class userUseCase implements IuserUseCase {
             const response = await this.userRepository.resetPassword(userId, hashedPass)
             return response
         } catch (error) {
-           throw error 
+            throw error
         }
     }
     async getRecentWorkspaces() {
@@ -283,11 +283,11 @@ export default class userUseCase implements IuserUseCase {
             throw error
         }
     }
-    async saveWorkspace(userId: string , workspaceId: string, isSaved: boolean) {
+    async saveWorkspace(userId: string, workspaceId: string, isSaved: boolean) {
         try {
             const existingSave = await this.workspaceRepository.findSavedWorkspace(userId, workspaceId)
             let result;
-            if(existingSave && !isSaved) {
+            if (existingSave && !isSaved) {
                 result = await this.workspaceRepository.saveWorkspace(userId, workspaceId, false)
             } else if (!existingSave && isSaved) {
                 result = await this.workspaceRepository.saveWorkspace(userId, workspaceId, true)
@@ -297,6 +297,17 @@ export default class userUseCase implements IuserUseCase {
             return result
         } catch (error) {
             throw error
+        }
+    }
+    async userDetails(userId: string) {
+        try {
+            const user = await this.userRepository.findById(userId);
+            if (!user) {
+                throw new Error("User not found");
+            }
+            return user;
+        } catch (error) {
+            throw error;
         }
     }
 }   

@@ -32,4 +32,5 @@ export interface IUserController{
     workspaceDetails(req: Request, res: Response): Promise<void>
     saveWorkspace(req: Request, res: Response): Promise<void>
     addSubscription(req: Request, res: Response): Promise<void>
+    verifySubscription(req: Request, res: Response): Promise<void>
 }

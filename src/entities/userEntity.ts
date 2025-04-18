@@ -9,5 +9,7 @@ export default interface Iuser {
     isAdmin?: boolean;
     isBlocked?: boolean;
     isSubscribed?: boolean;
+    subscriptionType?: string;
+    subscriptionStartDate?: Date;
+    subscriptionEndDate?: Date;
 }
-

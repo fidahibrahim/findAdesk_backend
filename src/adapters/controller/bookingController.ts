@@ -200,7 +200,6 @@ export class bookingController {
     try {
       const bookingId = req.query.bookingId as string;
       const response = await this.bookingUseCase.cancelBooking(bookingId)
-      console.log(response, 'response in controller')
       res.status(HttpStatusCode.OK)
         .json(handleSuccess(ResponseMessage.CANCEL_BOOKING, HttpStatusCode.OK, response));
     } catch (error) {

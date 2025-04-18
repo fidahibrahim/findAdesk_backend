@@ -166,7 +166,7 @@ export default class bookingUseCase implements IBookingUseCase {
             throw error;
         }
     }
-    async cancelBooking(bookingId: string): Promise<any> {
+    async cancelBooking(bookingId: string) {
         try {
             const booking = await this.bookingRepository.findBookingById(bookingId)
 
@@ -176,18 +176,35 @@ export default class bookingUseCase implements IBookingUseCase {
             if (typeof booking?.seats !== 'number' || isNaN(booking.seats)) {
                 throw new Error(`Invalid booking seats: ${booking?.seats}`);
             }
-            const workspaceId = booking.workspaceId._id.toString();
             const userId = booking.userId._id.toString();
+            const userData = await this.userRepository.findById(userId)
+            console.log(userData,'userdata in repo')
+            const isSubscribed = userData?.isSubscribed || false;
+
+            const now = new Date();
+            const startTime = new Date(booking.startTime);
+            const timeDifference = startTime.getTime() - now.getTime();
+            const hoursDifference = timeDifference / (1000 * 60 * 60);
+
+            if (isSubscribed && hoursDifference <= 1) {
+                throw new Error("Subscribed users can only cancel bookings at least 1 hour before start time");
+            } else if (!isSubscribed && hoursDifference <= 24) {
+                throw new Error("Bookings can only be cancelled at least 24 hours before start time");
+            }
+
+            const workspaceId = booking.workspaceId._id.toString();
             await this.workspaceRepository.updateBookedSeats(
                 workspaceId,
                 booking?.seats
             )
+
+            const refundAmount = isSubscribed ? booking?.grandTotal : booking?.subTotal;
             await this.walletRepository.updateWalletAmount(
                 userId,
-                booking?.subTotal
+                refundAmount
             )
             const updatedBooking = await this.bookingRepository.updateCancelledStatus(bookingId, 'cancelled')
-            console.log(updatedBooking,'updattdebooking in usecase')
+            console.log(updatedBooking, 'updattdebooking in usecase')
             return updatedBooking
         } catch (error) {
             throw error
