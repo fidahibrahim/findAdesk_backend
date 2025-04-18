@@ -92,15 +92,23 @@ class ownerController {
                 const { token, refreshToken } = response;
                 res.cookie("ownerToken", token, {
                     httpOnly: true,
-                    maxAge: 60 * 60 * 1000,
+                    secure: true, // 
+                    sameSite: "none",
+                    maxAge: 24 * 60 * 60 * 1000,
                 }).cookie("ownerRefreshToken", refreshToken, {
                     httpOnly: true,
+                    secure: true, // 
+                    sameSite: "none",
                     maxAge: 30 * 24 * 60 * 60 * 1000
                 });
                 res.status(200).json({ status: true, message: 'Logined Successfully', user: response.user });
             }
             else if (!(response === null || response === void 0 ? void 0 : response.status) && (response === null || response === void 0 ? void 0 : response.message) == "Otp is not verified") {
-                res.cookie("otpEmail", email, { maxAge: 3600000 });
+                res.cookie("otpEmail", email, {
+                    httpOnly: true,
+                    secure: true, // 
+                    sameSite: "none", maxAge: 3600000
+                });
                 res.status(403).json({ isVerified: "false" });
             }
             else if (response === null || response === void 0 ? void 0 : response.status) {
@@ -120,7 +128,11 @@ class ownerController {
     }
     async logout(req, res) {
         try {
-            res.cookie("ownerToken", "", { httpOnly: true, expires: new Date() });
+            res.cookie("ownerToken", "", {
+                httpOnly: true,
+                secure: true, // 
+                sameSite: "none", expires: new Date()
+            });
             res.status(httpStatusCode_1.HttpStatusCode.OK)
                 .json((0, responseHandler_1.handleSuccess)(responseMssg_1.ResponseMessage.LOGOUT_SUCCESS, httpStatusCode_1.HttpStatusCode.OK));
         }

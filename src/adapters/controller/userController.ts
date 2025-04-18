@@ -88,9 +88,13 @@ export class UserController {
                 const { token, refreshToken } = response
                 res.cookie("userToken", token, {
                     httpOnly: true,
-                    maxAge: 60 * 60 * 1000,
+                    secure: true, // 
+                    sameSite: "none", //
+                    maxAge: 24 * 60 * 60 * 1000,
                 }).cookie("userRefreshToken", refreshToken, {
                     httpOnly: true,
+                    secure: true, // 
+                    sameSite: "none", //
                     maxAge: 30 * 24 * 60 * 60 * 1000
                 })
                 res.status(200).json({ status: true, message: 'Logined Successfully', user: response.user })
@@ -102,7 +106,11 @@ export class UserController {
             else if (
                 !response?.status && response?.message == "Otp is not verified"
             ) {
-                res.cookie("otpEmail", email, { maxAge: 3600000 })
+                res.cookie("otpEmail", email, {
+                    httpOnly: true,
+                    secure: true, // 
+                    sameSite: "none", maxAge: 3600000
+                })
                 res.status(403).json({ isVerified: "false" });
             } else if (response?.status) {
                 res.status(200).json(response);
@@ -118,7 +126,15 @@ export class UserController {
     }
     async logout(req: Request, res: Response) {
         try {
-            res.cookie("userToken", "", { httpOnly: true, expires: new Date() }).cookie("userRefreshToken", "", { httpOnly: true, expires: new Date() })
+            res.cookie("userToken", "", {
+                httpOnly: true,
+                secure: true, // 
+                sameSite: "none", expires: new Date()
+            }).cookie("userRefreshToken", "", {
+                httpOnly: true,
+                secure: true, // 
+                sameSite: "none", expires: new Date()
+            })
             res
                 .status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.LOGOUT_SUCCESS, HttpStatusCode.OK, { status: true }));
@@ -135,9 +151,13 @@ export class UserController {
                 const { token, refreshToken } = response
                 res.cookie("userToken", token, {
                     httpOnly: true,
+                    secure: true, // 
+                    sameSite: "none", 
                     maxAge: 360000,
                 }).cookie("userRefreshToken", refreshToken, {
                     httpOnly: true,
+                    secure: true, // 
+                    sameSite: "none", 
                     maxAge: 30 * 24 * 60 * 60 * 1000
                 })
                 res
@@ -351,26 +371,26 @@ export class UserController {
                 const planType = session.metadata?.planType;
                 const subscriptionStartDate = new Date();
                 let subscriptionEndDate = new Date();
-                
+
                 if (planType === 'monthly') {
                     subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
                 } else if (planType === 'yearly') {
                     subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
                 }
-                
+
                 userDetails.isSubscribed = true;
                 userDetails.subscriptionType = planType;
                 userDetails.subscriptionStartDate = subscriptionStartDate;
                 userDetails.subscriptionEndDate = subscriptionEndDate;
-                
+
                 await userDetails.save();
-                
+
                 const result = {
                     planType: planType,
                     amount: parseInt(session.metadata?.amount!),
                     subscriptionEndDate: subscriptionEndDate
                 };
-                
+
                 res.status(HttpStatusCode.OK).json(handleSuccess(ResponseMessage.SUBSCRIPTION_VERIFIED, HttpStatusCode.OK, result));
             }
         } catch (error) {
