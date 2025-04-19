@@ -99,6 +99,7 @@ export default class OtpService implements IotpService {
                 subject: 'findAdesk Password Reset',
                 html: html
             }
+            console.log('message: ', message);
             await transporter.sendMail(message)
 
         } catch (error) {

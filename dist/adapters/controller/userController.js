@@ -93,13 +93,9 @@ class UserController {
                 const { token, refreshToken } = response;
                 res.cookie("userToken", token, {
                     httpOnly: true,
-                    secure: true, // 
-                    sameSite: "none", //
-                    maxAge: 24 * 60 * 60 * 1000,
+                    maxAge: 60 * 60 * 1000,
                 }).cookie("userRefreshToken", refreshToken, {
                     httpOnly: true,
-                    secure: true, // 
-                    sameSite: "none", //
                     maxAge: 30 * 24 * 60 * 60 * 1000
                 });
                 res.status(200).json({ status: true, message: 'Logined Successfully', user: response.user });
@@ -108,11 +104,7 @@ class UserController {
                 res.status(403).json({ status: false, message: response.message });
             }
             else if (!(response === null || response === void 0 ? void 0 : response.status) && (response === null || response === void 0 ? void 0 : response.message) == "Otp is not verified") {
-                res.cookie("otpEmail", email, {
-                    httpOnly: true,
-                    secure: true, // 
-                    sameSite: "none", maxAge: 3600000
-                });
+                res.cookie("otpEmail", email, { maxAge: 3600000 });
                 res.status(403).json({ isVerified: "false" });
             }
             else if (response === null || response === void 0 ? void 0 : response.status) {
@@ -132,15 +124,7 @@ class UserController {
     }
     async logout(req, res) {
         try {
-            res.cookie("userToken", "", {
-                httpOnly: true,
-                secure: true, // 
-                sameSite: "none", expires: new Date()
-            }).cookie("userRefreshToken", "", {
-                httpOnly: true,
-                secure: true, // 
-                sameSite: "none", expires: new Date()
-            });
+            res.cookie("userToken", "", { httpOnly: true, expires: new Date() }).cookie("userRefreshToken", "", { httpOnly: true, expires: new Date() });
             res
                 .status(httpStatusCode_1.HttpStatusCode.OK)
                 .json((0, responseHandler_1.handleSuccess)(responseMssg_1.ResponseMessage.LOGOUT_SUCCESS, httpStatusCode_1.HttpStatusCode.OK, { status: true }));
@@ -158,13 +142,9 @@ class UserController {
                 const { token, refreshToken } = response;
                 res.cookie("userToken", token, {
                     httpOnly: true,
-                    secure: true, // 
-                    sameSite: "none",
                     maxAge: 360000,
                 }).cookie("userRefreshToken", refreshToken, {
                     httpOnly: true,
-                    secure: true, // 
-                    sameSite: "none",
                     maxAge: 30 * 24 * 60 * 60 * 1000
                 });
                 res
