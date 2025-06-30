@@ -168,33 +168,54 @@ class bookingRepository {
             throw error;
         }
     }
-    async getBookingHistory(userId, filter) {
+    async getBookingHistory(userId, filter, page = 1, limit = 10) {
         try {
+            const skip = (page - 1) * limit;
             if (filter === 'saved') {
+                const totalItems = await this.savedWorkspace.countDocuments({
+                    userId: userId,
+                    isActive: true
+                });
                 const savedWorkspaces = await this.savedWorkspace.find({ userId: userId, isActive: true })
                     .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
                     .populate({
                     path: 'workspaceId',
                     select: 'workspaceName workspaceMail spaceDescription place street state images'
                 });
-                return savedWorkspaces.map(item => ({
+                const data = savedWorkspaces.map(item => ({
                     _id: item._id,
                     userId: item.userId,
                     workspaceId: item.workspaceId,
                     status: 'saved',
                 }));
+                return {
+                    data,
+                    totalPages: Math.ceil(totalItems / limit),
+                    currentPage: page,
+                    totalItems
+                };
             }
             let query = { userId: userId };
             if (filter !== 'all') {
                 query.status = filter;
             }
+            const totalItems = await this.booking.countDocuments(query);
             const bookings = await this.booking.find(query)
                 .sort({ _id: -1 })
+                .skip(skip)
+                .limit(limit)
                 .populate({
                 path: 'workspaceId',
                 select: 'workspaceName workspaceMail place street state images'
             });
-            return bookings;
+            return {
+                data: bookings,
+                totalPages: Math.ceil(totalItems / limit),
+                currentPage: page,
+                totalItems
+            };
         }
         catch (error) {
             throw error;

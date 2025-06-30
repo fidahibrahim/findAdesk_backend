@@ -253,7 +253,9 @@ class UserController {
         try {
             const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
             const filter = req.query.filter || 'all';
-            const response = await this.userUseCase.getBookingHistory(userId, filter);
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const response = await this.userUseCase.getBookingHistory(userId, filter, page, limit);
             res.status(httpStatusCode_1.HttpStatusCode.OK)
                 .json((0, responseHandler_1.handleSuccess)(responseMssg_1.ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS, httpStatusCode_1.HttpStatusCode.OK, response));
         }

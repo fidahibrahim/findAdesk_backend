@@ -260,9 +260,9 @@ class userUseCase {
             throw error;
         }
     }
-    async getBookingHistory(userId, filter = 'all') {
+    async getBookingHistory(userId, filter = 'all', page = 1, limit = 10) {
         try {
-            const bookings = await this.bookingRepository.getBookingHistory(userId, filter);
+            const bookings = await this.bookingRepository.getBookingHistory(userId, filter, page, limit);
             return bookings;
         }
         catch (error) {

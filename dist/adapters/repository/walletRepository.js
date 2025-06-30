@@ -30,6 +30,42 @@ class walletRepository {
             throw error;
         }
     }
+    async getWalletTransactions(userId, page, limit, type) {
+        try {
+            const userObjectId = new mongoose_1.default.Types.ObjectId(userId);
+            const skip = (page - 1) * limit;
+            const wallet = await this.wallet.findOne({ userId: userObjectId });
+            if (!wallet) {
+                return {
+                    transactions: [],
+                    totalTransactions: 0,
+                    totalPages: 0,
+                    balance: 0,
+                    _id: null,
+                    userId: userId
+                };
+            }
+            let filteredTransactions = wallet.transactions;
+            if (type && type !== 'all') {
+                filteredTransactions = wallet.transactions.filter(t => t.type === type);
+            }
+            filteredTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            const paginatedTransactions = filteredTransactions.slice(skip, skip + limit);
+            const totalTransactions = filteredTransactions.length;
+            const totalPages = Math.ceil(totalTransactions / limit);
+            return {
+                transactions: paginatedTransactions,
+                totalTransactions,
+                totalPages,
+                balance: wallet.balance,
+                _id: wallet._id,
+                userId: wallet.userId
+            };
+        }
+        catch (error) {
+            throw error;
+        }
+    }
     async updateWalletAmount(userId, amount) {
         try {
             const wallet = await this.findWalletByUserId(userId);

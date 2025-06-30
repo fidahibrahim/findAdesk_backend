@@ -5,13 +5,31 @@ class walletUseCase {
         this.walletRepository = walletRepository;
         this.bookingRepository = bookingRepository;
     }
-    async getWallet(userId) {
+    async getWallet(userId, page = 1, limit = 10, type) {
         try {
             let wallet = await this.walletRepository.findWalletByUserId(userId);
             if (!wallet) {
                 wallet = await this.walletRepository.createWallet(userId);
+                return {
+                    balance: 0,
+                    _id: wallet._id,
+                    userId: wallet.userId,
+                    transactions: [],
+                    totalTransactions: 0,
+                    totalPages: 0,
+                    currentPage: page
+                };
             }
-            return wallet;
+            const paginatedTransactions = await this.walletRepository.getWalletTransactions(userId, page, limit, type);
+            return {
+                balance: wallet.balance,
+                _id: wallet._id,
+                userId: wallet.userId,
+                transactions: paginatedTransactions === null || paginatedTransactions === void 0 ? void 0 : paginatedTransactions.transactions,
+                totalTransactions: paginatedTransactions === null || paginatedTransactions === void 0 ? void 0 : paginatedTransactions.totalTransactions,
+                totalPages: paginatedTransactions === null || paginatedTransactions === void 0 ? void 0 : paginatedTransactions.totalPages,
+                currentPage: page
+            };
         }
         catch (error) {
             throw error;

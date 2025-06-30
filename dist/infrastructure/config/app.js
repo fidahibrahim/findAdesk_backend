@@ -23,7 +23,7 @@ if (!fs_1.default.existsSync(logDirPath)) {
 }
 const accessLogStream = fs_1.default.createWriteStream(path_1.default.join(logDirPath, '/access.log'), { flags: "a" });
 app.use((0, morgan_1.default)("dev"));
-// app.use(morgan("combined", { stream: accessLogStream }));
+app.use((0, morgan_1.default)("combined", { stream: accessLogStream }));
 node_cron_1.default.schedule('0 0 * * *', async () => {
     console.log('Running subscription expiration check...');
     const subscriptionService = new subscriptionService_1.SubscriptionService();
