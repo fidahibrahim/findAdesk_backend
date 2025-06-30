@@ -25,7 +25,7 @@ const accessLogStream = fs.createWriteStream(
     { flags: "a" }
 );
 app.use(morgan("dev"))
-// app.use(morgan("combined", { stream: accessLogStream }));
+app.use(morgan("combined", { stream: accessLogStream }));
 
 cron.schedule('0 0 * * *', async () => {
     console.log('Running subscription expiration check...');
@@ -41,6 +41,7 @@ app.use(
     cors({
         origin: "https://find-adesk-frontend.vercel.app",
         credentials: true
+
     })
 );
 

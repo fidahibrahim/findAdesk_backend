@@ -1,4 +1,5 @@
 export interface WalletTransaction {
+    _id?: string;
     transactionId: string;
     type: 'credit' | 'debit';
     date: Date;
@@ -11,4 +12,14 @@ export interface IWallet {
     userId: String;
     balance: number;
     transactions: WalletTransaction[];
+}
+
+export interface IWalletResponse {
+    balance: number;
+    _id: string;
+    userId: string;
+    transactions: WalletTransaction[];
+    totalTransactions: number;
+    totalPages: number;
+    currentPage: number;
 }

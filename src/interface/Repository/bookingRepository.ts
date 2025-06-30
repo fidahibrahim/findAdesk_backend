@@ -4,7 +4,7 @@ import { checkoutBookingDetails, IBooking, ICreateBooking } from "../../entities
 export interface IBookingRepository {
     createBooking(booking: ICreateBooking): Promise<IBooking>;
     getBookingDetails(bookingId: string): Promise<checkoutBookingDetails[]>;
-    getBookingHistory(userId: string | undefined, status: string): Promise<any>;
+    getBookingHistory(userId: string | undefined, status: string, page: number, limit: number): Promise<any>;
     listBookings(ownerId: string, search: string, page: number, limit: number): Promise<{ bookings: IBooking[] | null, totalCount: number }>
     bookingViewDetails(bookingId: string): Promise<IBooking | null>
     bookingConfirmDetails(bookingId: string): Promise<any>

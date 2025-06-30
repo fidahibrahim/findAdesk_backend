@@ -25,8 +25,8 @@ export interface PopulatedBooking {
   status: string;
   subTotal: number;
   grandTotal: number;
-  startTime: Date;  
-  endTime: Date; 
+  startTime: Date;
+  endTime: Date;
 }
 
 export default class bookingRepository implements IBookingRepository {
@@ -213,33 +213,57 @@ export default class bookingRepository implements IBookingRepository {
       throw error
     }
   }
-  async getBookingHistory(userId: string | undefined, filter: string) {
+  async getBookingHistory(userId: string | undefined, filter: string, page: number = 1, limit: number = 10) {
     try {
+      const skip = (page - 1) * limit;
       if (filter === 'saved') {
+        const totalItems = await this.savedWorkspace.countDocuments({
+          userId: userId,
+          isActive: true
+        });
+
         const savedWorkspaces = await this.savedWorkspace.find({ userId: userId, isActive: true })
           .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
           .populate({
             path: 'workspaceId',
             select: 'workspaceName workspaceMail spaceDescription place street state images'
           });
-        return savedWorkspaces.map(item => ({
+        const data = savedWorkspaces.map(item => ({
           _id: item._id,
           userId: item.userId,
           workspaceId: item.workspaceId,
           status: 'saved',
         }));
+
+        return {
+          data,
+          totalPages: Math.ceil(totalItems / limit),
+          currentPage: page,
+          totalItems
+        };
       }
+
       let query: any = { userId: userId }
       if (filter !== 'all') {
         query.status = filter
       }
+      const totalItems = await this.booking.countDocuments(query);
       const bookings = await this.booking.find(query)
         .sort({ _id: -1 })
+        .skip(skip)
+        .limit(limit)
         .populate({
           path: 'workspaceId',
           select: 'workspaceName workspaceMail place street state images'
         })
-      return bookings
+      return {
+        data: bookings,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+        totalItems
+      };
     } catch (error) {
       throw error
     }
@@ -275,12 +299,12 @@ export default class bookingRepository implements IBookingRepository {
         throw new Error("Workspace not found");
       }
 
-      if (workspace.capacity ! < seats) {
+      if (workspace.capacity! < seats) {
         throw new Error("Not enough capacity in the workspace");
       }
 
       workspace.bookedSeats! += seats;
-      
+
       await workspace.save();
 
       const updatedBooking = await this.booking.findOneAndUpdate(
@@ -300,16 +324,16 @@ export default class bookingRepository implements IBookingRepository {
       throw error;
     }
   }
-  async findBookingById(bookingId: string): Promise<PopulatedBooking|null> {
+  async findBookingById(bookingId: string): Promise<PopulatedBooking | null> {
     try {
       const booking = await this.booking.findById(bookingId)
-      .populate("workspaceId")
-      .populate({
-        path: "userId",
-        select: "_id name email isSubscribed" 
-      })
-      .lean<PopulatedBooking>()
-      .exec();
+        .populate("workspaceId")
+        .populate({
+          path: "userId",
+          select: "_id name email isSubscribed"
+        })
+        .lean<PopulatedBooking>()
+        .exec();
       return booking
     } catch (error) {
       throw error

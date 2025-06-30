@@ -17,7 +17,17 @@ export class walletController {
     async getWallet(req: AuthenticatedRequestUser, res: Response) {
         try {
             const userId = req.user?.userId
-            const wallet = await this.walletUseCase.getWallet(userId!)
+            const { page = 1, limit = 10, type } = req.query;
+
+            const pageNum = Math.max(1, parseInt(page as string) || 1);
+            const limitNum = Math.min(6, Math.max(1, parseInt(limit as string) || 10));
+
+            const wallet = await this.walletUseCase.getWallet(
+                userId!,
+                pageNum,
+                limitNum,
+                type as string
+            )
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.FETCH_WALLET, HttpStatusCode.OK, wallet))
         } catch (error) {
@@ -31,9 +41,9 @@ export class walletController {
             console.log(req)
             const { payload } = req.body
             const userId = req.user?.userId
-            console.log(userId,'userid')
+            console.log(userId, 'userid')
             const paymentAmount = payload.grandTotal;
-            console.log(paymentAmount,'payment amount')
+            console.log(paymentAmount, 'payment amount')
 
             await this.walletUseCase.updateDebitWallet(userId!, paymentAmount)
 

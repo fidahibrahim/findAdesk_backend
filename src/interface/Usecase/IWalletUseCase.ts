@@ -1,7 +1,7 @@
-import { IWallet } from "../../entities/walletEntity";
+import { IWallet, IWalletResponse } from "../../entities/walletEntity";
 
 export interface IWalletUseCase {
-    getWallet(userId: string): Promise<IWallet>
+    getWallet(userId: string, page: number, limit: number, type?: string | undefined): Promise<any>
     updateBookingStatus(
         bookingId: string,
         status: string,
@@ -9,5 +9,5 @@ export interface IWalletUseCase {
         paymentMethod: string,
         worksapceId: string
     ): Promise<any>;
-    updateDebitWallet(userId: string, amount: number): Promise<IWallet|null>
+    updateDebitWallet(userId: string, amount: number): Promise<IWallet | null>
 }

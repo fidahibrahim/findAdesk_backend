@@ -12,13 +12,37 @@ export default class walletUseCase implements IWalletUseCase {
         this.bookingRepository = bookingRepository
     }
 
-    async getWallet(userId: string) {
+    async getWallet(userId: string, page: number = 1, limit: number = 10, type?: string | undefined) {
         try {
             let wallet = await this.walletRepository.findWalletByUserId(userId)
             if (!wallet) {
                 wallet = await this.walletRepository.createWallet(userId)
+                return {
+                    balance: 0,
+                    _id: wallet._id,
+                    userId: wallet.userId,
+                    transactions: [],
+                    totalTransactions: 0,
+                    totalPages: 0,
+                    currentPage: page
+                };
             }
-            return wallet
+            const paginatedTransactions = await this.walletRepository.getWalletTransactions(
+                userId,
+                page,
+                limit,
+                type
+            );
+
+            return {
+                balance: wallet.balance,
+                _id: wallet._id,
+                userId: wallet.userId,
+                transactions: paginatedTransactions?.transactions,
+                totalTransactions: paginatedTransactions?.totalTransactions,
+                totalPages: paginatedTransactions?.totalPages,
+                currentPage: page
+            };
         } catch (error) {
             throw error
         }
@@ -59,7 +83,7 @@ export default class walletUseCase implements IWalletUseCase {
                 wallet.balance - amount,
                 transaction
             );
-            console.log(updatedWallet,'updated wallet in usecase')
+            console.log(updatedWallet, 'updated wallet in usecase')
             return updatedWallet;
         } catch (error) {
             throw error

@@ -31,6 +31,44 @@ export default class walletRepository implements IWalletRepository {
         }
     }
 
+    async getWalletTransactions(userId: string, page: number, limit: number, type?: string) {
+        try {
+            const userObjectId = new mongoose.Types.ObjectId(userId)
+            const skip = (page - 1) * limit
+
+            const wallet = await this.wallet.findOne({ userId: userObjectId });
+            if (!wallet) {
+                return {
+                    transactions: [],
+                    totalTransactions: 0,
+                    totalPages: 0,
+                    balance: 0,
+                    _id: null,
+                    userId: userId
+                };
+            }
+            let filteredTransactions = wallet.transactions;
+            if (type && type !== 'all') {
+                filteredTransactions = wallet.transactions.filter(t => t.type === type);
+            }
+            filteredTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            const paginatedTransactions = filteredTransactions.slice(skip, skip + limit);
+            const totalTransactions = filteredTransactions.length;
+            const totalPages = Math.ceil(totalTransactions / limit);
+
+            return {
+                transactions: paginatedTransactions,
+                totalTransactions,
+                totalPages,
+                balance: wallet.balance,
+                _id: wallet._id,
+                userId: wallet.userId
+            };
+        } catch (error) {
+            throw error
+        }
+    }
+
     async updateWalletAmount(userId: string, amount: number) {
         try {
             const wallet = await this.findWalletByUserId(userId)

@@ -236,7 +236,9 @@ export class UserController {
         try {
             const userId = req.user?.userId
             const filter = req.query.filter as string || 'all';
-            const response = await this.userUseCase.getBookingHistory(userId, filter)
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+            const response = await this.userUseCase.getBookingHistory(userId, filter, page, limit)
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.BOOKING_VIEWDETAILS_SUCCESS, HttpStatusCode.OK, response));
         } catch (error) {
@@ -351,26 +353,26 @@ export class UserController {
                 const planType = session.metadata?.planType;
                 const subscriptionStartDate = new Date();
                 let subscriptionEndDate = new Date();
-                
+
                 if (planType === 'monthly') {
                     subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
                 } else if (planType === 'yearly') {
                     subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
                 }
-                
+
                 userDetails.isSubscribed = true;
                 userDetails.subscriptionType = planType;
                 userDetails.subscriptionStartDate = subscriptionStartDate;
                 userDetails.subscriptionEndDate = subscriptionEndDate;
-                
+
                 await userDetails.save();
-                
+
                 const result = {
                     planType: planType,
                     amount: parseInt(session.metadata?.amount!),
                     subscriptionEndDate: subscriptionEndDate
                 };
-                
+
                 res.status(HttpStatusCode.OK).json(handleSuccess(ResponseMessage.SUBSCRIPTION_VERIFIED, HttpStatusCode.OK, result));
             }
         } catch (error) {

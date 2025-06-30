@@ -275,9 +275,9 @@ export default class userUseCase implements IuserUseCase {
             throw error
         }
     }
-    async getBookingHistory(userId: string | undefined, filter: string = 'all') {
+    async getBookingHistory(userId: string | undefined, filter: string = 'all', page: number = 1, limit: number = 10) {
         try {
-            const bookings = await this.bookingRepository.getBookingHistory(userId, filter)
+            const bookings = await this.bookingRepository.getBookingHistory(userId, filter, page, limit)
             return bookings
         } catch (error) {
             throw error

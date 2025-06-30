@@ -67,7 +67,7 @@ export interface IuserUseCase {
     getRecentWorkspaces(): Promise<IWorkspace[]|null>
     searchWorkspaces(filters: Ifilter): Promise<IWorkspace[]|null>
     workspaceDetails(workspaceId: string, userId: string|undefined): Promise<IWorkspace|null>
-    getBookingHistory(userId: string|undefined, filter: string): Promise<any>
+    getBookingHistory(userId: string|undefined, filter: string, page: number, limit: number): Promise<any>
     saveWorkspace(userId: string|undefined, workspaceId: string, isSaved: boolean): Promise<any>
     userDetails(userId:string):Promise<any>
 }
