@@ -122,7 +122,19 @@ export class UserController {
     }
     async logout(req: Request, res: Response) {
         try {
-            res.cookie("userToken", "", { httpOnly: true, expires: new Date() }).cookie("userRefreshToken", "", { httpOnly: true, expires: new Date() })
+            res.cookie("userToken", "", {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none',
+                expires: new Date()
+
+            }).cookie("userRefreshToken", "", {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none',
+                expires: new Date()
+
+            })
             res
                 .status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.LOGOUT_SUCCESS, HttpStatusCode.OK, { status: true }));
