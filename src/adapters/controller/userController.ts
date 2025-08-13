@@ -242,6 +242,7 @@ export class UserController {
                     .json(handleSuccess(ResponseMessage.UPDATE_PROFILE_SUCCESS, HttpStatusCode.OK))
             }
         } catch (error) {
+            console.log(error)
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json(handleError(ResponseMessage.UPDATE_PROFILE_FAILURE, HttpStatusCode.INTERNAL_SERVER_ERROR))
         }

@@ -253,6 +253,7 @@ class UserController {
             }
         }
         catch (error) {
+            console.log(error);
             res.status(httpStatusCode_1.HttpStatusCode.INTERNAL_SERVER_ERROR)
                 .json((0, responseHandler_1.handleError)(responseMssg_1.ResponseMessage.UPDATE_PROFILE_FAILURE, httpStatusCode_1.HttpStatusCode.INTERNAL_SERVER_ERROR));
         }
