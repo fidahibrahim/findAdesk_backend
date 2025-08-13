@@ -234,6 +234,8 @@ export class UserController {
                 ...req.body,
                 image: req.file,
             }
+            console.log(formData,'formdata');
+            
             const response = await this.userUseCase.editProfile(formData)
             if (response) {
                 res.status(HttpStatusCode.OK)
