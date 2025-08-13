@@ -92,9 +92,13 @@ export class ownerController {
                 const { token, refreshToken } = response
                 res.cookie("ownerToken", token, {
                     httpOnly: true,
+                    secure: true,
+                    sameSite: 'none',
                     maxAge: 60 * 60 * 1000,
                 }).cookie("ownerRefreshToken", refreshToken, {
                     httpOnly: true,
+                    secure: true,
+                    sameSite: 'none',
                     maxAge: 30 * 24 * 60 * 60 * 1000
                 })
                 res.status(200).json({ status: true, message: 'Logined Successfully', user: response.user })
@@ -117,7 +121,10 @@ export class ownerController {
     }
     async logout(req: Request, res: Response) {
         try {
-            res.cookie("ownerToken", "", { httpOnly: true, expires: new Date() })
+            res.cookie("ownerToken", "", {
+                httpOnly: true, secure: true,
+                sameSite: 'none', expires: new Date()
+            })
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.LOGOUT_SUCCESS, HttpStatusCode.OK))
         } catch (error) {

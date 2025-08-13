@@ -37,9 +37,13 @@ export class adminController implements IAdminController {
             if (response?.message == "Logined successfully") {
                 res.cookie("adminToken", response.token, {
                     httpOnly: true,
+                    secure: true,
+                    sameSite: 'none',
                     maxAge: 60 * 60 * 1000,
                 }).cookie("adminRefreshToken", response.adminRefreshToken, {
                     httpOnly: true,
+                    secure: true,
+                    sameSite: 'none',
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                 });
                 res.status(200).json({ message: "logined Successfully", admin: response.admin });
@@ -50,7 +54,10 @@ export class adminController implements IAdminController {
     }
     async logout(req: Request, res: Response) {
         try {
-            res.cookie("adminToken", "", { httpOnly: true, expires: new Date() })
+            res.cookie("adminToken", "", {
+                httpOnly: true, secure: true,
+                sameSite: 'none', expires: new Date()
+            })
             res.status(HttpStatusCode.OK)
                 .json(handleSuccess(ResponseMessage.LOGIN_SUCCESS, HttpStatusCode.OK, { status: true }))
 
