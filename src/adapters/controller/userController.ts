@@ -89,12 +89,12 @@ export class UserController {
                 res.cookie("userToken", token, {
                     httpOnly: true,
                     secure: true,
-                    sameSite: 'none',
+                    sameSite: 'none' as 'none',
                     maxAge: 60 * 60 * 1000,
                 }).cookie("userRefreshToken", refreshToken, {
                     httpOnly: true,
                     secure: true,
-                    sameSite: 'none',
+                    sameSite: 'none' as 'none',
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                 })
                 res.status(200).json({ status: true, message: 'Logined Successfully', user: response.user })
@@ -125,13 +125,13 @@ export class UserController {
             res.cookie("userToken", "", {
                 httpOnly: true,
                 secure: true,
-                sameSite: 'none',
+                sameSite: 'none' as 'none',
                 expires: new Date()
 
             }).cookie("userRefreshToken", "", {
                 httpOnly: true,
                 secure: true,
-                sameSite: 'none',
+                sameSite: 'none' as 'none',
                 expires: new Date()
 
             })
