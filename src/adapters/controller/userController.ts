@@ -88,13 +88,17 @@ export class UserController {
                 const { token, refreshToken } = response
                 res.cookie("userToken", token, {
                     httpOnly: true,
+                    // secure: false,
+                    // sameSite: 'strict' ,
                     secure: true,
-                    sameSite: 'none' as 'none',
+                    sameSite: 'none' ,
                     maxAge: 60 * 60 * 1000,
                 }).cookie("userRefreshToken", refreshToken, {
                     httpOnly: true,
+                    // secure: false,
+                    // sameSite: 'strict' ,
                     secure: true,
-                    sameSite: 'none' as 'none',
+                    sameSite: 'none' ,
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                 })
                 res.status(200).json({ status: true, message: 'Logined Successfully', user: response.user })
@@ -124,14 +128,18 @@ export class UserController {
         try {
             res.cookie("userToken", "", {
                 httpOnly: true,
+                // secure: false,
+                // sameSite: 'strict' ,
                 secure: true,
-                sameSite: 'none' as 'none',
+                sameSite: 'none' ,
                 expires: new Date()
 
             }).cookie("userRefreshToken", "", {
                 httpOnly: true,
+                // secure: false,
+                // sameSite: 'strict',
                 secure: true,
-                sameSite: 'none' as 'none',
+                sameSite: 'none',
                 expires: new Date()
 
             })

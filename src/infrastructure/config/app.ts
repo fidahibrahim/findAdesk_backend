@@ -40,6 +40,7 @@ app.use(express.urlencoded({ extended: true, limit: "100mb" }))
 app.use(
     cors({
         origin: "https://find-adesk-frontend.vercel.app",
+        // origin: "http://localhost:5000",
         credentials: true
     })
 );
