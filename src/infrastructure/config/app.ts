@@ -41,7 +41,6 @@ app.use(
     cors({
         origin: "https://find-adesk-frontend.vercel.app",
         credentials: true
-
     })
 );
 
