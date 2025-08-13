@@ -88,14 +88,14 @@ export class UserController {
                 const { token, refreshToken } = response
                 res.cookie("userToken", token, {
                     httpOnly: true,
-                    maxAge: 60 * 60 * 1000,
+                    secure: true,
                     sameSite: 'none',
-                    secure: true
+                    maxAge: 60 * 60 * 1000,
                 }).cookie("userRefreshToken", refreshToken, {
                     httpOnly: true,
-                    maxAge: 30 * 24 * 60 * 60 * 1000,
+                    secure: true,
                     sameSite: 'none',
-                    secure: true
+                    maxAge: 30 * 24 * 60 * 60 * 1000,
                 })
                 res.status(200).json({ status: true, message: 'Logined Successfully', user: response.user })
             } else if (
