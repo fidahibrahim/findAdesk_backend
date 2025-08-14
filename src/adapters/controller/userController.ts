@@ -91,14 +91,14 @@ export class UserController {
                     // secure: false,
                     // sameSite: 'strict' ,
                     secure: true,
-                    sameSite: 'none' ,
+                    sameSite: 'none',
                     maxAge: 60 * 60 * 1000,
                 }).cookie("userRefreshToken", refreshToken, {
                     httpOnly: true,
                     // secure: false,
                     // sameSite: 'strict' ,
                     secure: true,
-                    sameSite: 'none' ,
+                    sameSite: 'none',
                     maxAge: 30 * 24 * 60 * 60 * 1000,
                 })
                 res.status(200).json({ status: true, message: 'Logined Successfully', user: response.user })
@@ -131,7 +131,7 @@ export class UserController {
                 // secure: false,
                 // sameSite: 'strict' ,
                 secure: true,
-                sameSite: 'none' ,
+                sameSite: 'none',
                 expires: new Date()
 
             }).cookie("userRefreshToken", "", {
@@ -159,9 +159,11 @@ export class UserController {
                 const { token, refreshToken } = response
                 res.cookie("userToken", token, {
                     httpOnly: true,
+                    secure: true,
                     maxAge: 360000,
                 }).cookie("userRefreshToken", refreshToken, {
                     httpOnly: true,
+                    sameSite: 'none',
                     maxAge: 30 * 24 * 60 * 60 * 1000
                 })
                 res
@@ -234,7 +236,7 @@ export class UserController {
                 ...req.body,
                 image: req.file,
             }
-            console.log(formData,'formdata');
+            console.log(formData, 'formdata');
             const response = await this.userUseCase.editProfile(formData)
             if (response) {
                 res.status(HttpStatusCode.OK)

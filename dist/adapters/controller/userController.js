@@ -164,9 +164,11 @@ class UserController {
                 const { token, refreshToken } = response;
                 res.cookie("userToken", token, {
                     httpOnly: true,
+                    secure: true,
                     maxAge: 360000,
                 }).cookie("userRefreshToken", refreshToken, {
                     httpOnly: true,
+                    sameSite: 'none',
                     maxAge: 30 * 24 * 60 * 60 * 1000
                 });
                 res
