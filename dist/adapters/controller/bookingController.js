@@ -27,6 +27,8 @@ class bookingController {
         try {
             const workspaceId = req.query.workspaceId;
             const { date, startTime, endTime, seats, day } = req.body;
+            console.log('endTime: ', endTime);
+            console.log('startTime: ', startTime);
             const data = {
                 workspaceId,
                 date,
