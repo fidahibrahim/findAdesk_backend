@@ -109,12 +109,15 @@ export class bookingController {
   }
   async stripeWebhook(req: Request, res: Response) {
     try {
+      console.log('function started')
+      console.log(process.env.WEBHOOK_SECRET_KEY,'key log')
       const sig = req.headers["stripe-signature"];
       const event = Stripe.webhooks.constructEvent(
         req.body,
         sig as string,
         process.env.WEBHOOK_SECRET_KEY!
       );
+      console.log(event, 'event in stripe')
       if (event.type === "checkout.session.completed") {
         const session = event.data.object;
         await this.bookingUseCase.updateBookingStatus(

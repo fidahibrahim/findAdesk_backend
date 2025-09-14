@@ -102,8 +102,11 @@ class bookingController {
     async stripeWebhook(req, res) {
         var _a, _b, _c, _d;
         try {
+            console.log('function started');
+            console.log(process.env.WEBHOOK_SECRET_KEY, 'key log');
             const sig = req.headers["stripe-signature"];
             const event = stripe_1.default.webhooks.constructEvent(req.body, sig, process.env.WEBHOOK_SECRET_KEY);
+            console.log(event, 'event in stripe');
             if (event.type === "checkout.session.completed") {
                 const session = event.data.object;
                 await this.bookingUseCase.updateBookingStatus((_a = session.metadata) === null || _a === void 0 ? void 0 : _a.bookingId, "completed", parseInt((_b = session.metadata) === null || _b === void 0 ? void 0 : _b.seat), (_c = session.metadata) === null || _c === void 0 ? void 0 : _c.paymentMethod, (_d = session.metadata) === null || _d === void 0 ? void 0 : _d.worksapceId);

@@ -238,7 +238,6 @@ export class UserController {
                 ...req.body,
                 image: req.file,
             }
-            console.log(formData, 'formdata');
             const response = await this.userUseCase.editProfile(formData)
             if (response) {
                 res.status(HttpStatusCode.OK)
@@ -367,7 +366,7 @@ export class UserController {
     }
     async verifySubscription(req: Request, res: Response) {
         try {
-            const { sessionId } = req.params;
+            const { sessionId } = req.params; 
             if (!process.env.STRIPE_SECRET_KEY) {
                 throw new Error(
                     "STRIPE_SECRET_KEY is not defined in environment variables"
@@ -376,7 +375,7 @@ export class UserController {
             const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
             const session = await stripe.checkout.sessions.retrieve(sessionId);
             const userId = session.metadata?.userId;
-
+  
             const userDetails = await this.userUseCase.userDetails(userId!);
 
             if (session.payment_status === "paid") {
@@ -398,7 +397,7 @@ export class UserController {
                 await userDetails.save();
 
                 const result = {
-                    planType: planType,
+                    planType: planType, 
                     amount: parseInt(session.metadata?.amount!),
                     subscriptionEndDate: subscriptionEndDate
                 };
