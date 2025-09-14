@@ -53,10 +53,24 @@ export default class bookingUseCase implements IBookingUseCase {
                 };
             }
 
-            const workspaceStartTime = new Date(workspace?.startTime).toTimeString().slice(0, 5);
-            console.log('workspaceStartTime: ', workspaceStartTime);
-            const workspaceEndTime = new Date(workspace?.endTime).toTimeString().slice(0, 5);
-            console.log('workspaceEndTime: ', workspaceEndTime);
+            // const workspaceStartTime = new Date(workspace?.startTime).toTimeString().slice(0, 5);
+            // console.log('workspaceStartTime: ', workspaceStartTime);
+            // const workspaceEndTime = new Date(workspace?.endTime).toTimeString().slice(0, 5);
+            // console.log('workspaceEndTime: ', workspaceEndTime);
+
+            const start = new Date(workspace?.startTime);
+            const end = new Date(workspace?.endTime);
+            const options: Intl.DateTimeFormatOptions = {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+                timeZone: "Asia/Kolkata",
+            };
+
+            const workspaceStartTime = start.toLocaleTimeString("en-GB", options);
+            console.log("workspaceStartTime: ", workspaceStartTime);
+            const workspaceEndTime = end.toLocaleTimeString("en-GB", options);
+            console.log("workspaceEndTime: ", workspaceEndTime);
 
             if (startTime < workspaceStartTime || endTime > workspaceEndTime) {
                 return {
@@ -79,7 +93,7 @@ export default class bookingUseCase implements IBookingUseCase {
             throw error
         }
     }
-    
+
     async createBooking(
         userId: string,
         workspaceId: string,
@@ -181,7 +195,7 @@ export default class bookingUseCase implements IBookingUseCase {
             }
             const userId = booking.userId._id.toString();
             const userData = await this.userRepository.findById(userId)
-            console.log(userData,'userdata in repo')
+            console.log(userData, 'userdata in repo')
             const isSubscribed = userData?.isSubscribed || false;
 
             const now = new Date();
