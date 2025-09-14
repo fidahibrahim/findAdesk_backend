@@ -8,98 +8,51 @@ class bookingUseCase {
         this.reviewRepository = reviewRepository;
         this.walletRepository = walletRepository;
     }
-    // async checkAvailability(data: AvailabilityRequest) {
-    //     try {
-    //         const { workspaceId, startTime, endTime, seats, day } = data;
-    //         const workspace = await this.workspaceRepository.findWorkspace(workspaceId)
-    //         if (!workspace) {
-    //             return {
-    //                 isAvailable: false,
-    //                 message: 'Workspace not found'
-    //             };
-    //         }
-    //         const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-    //         const weekends = ['saturday', 'sunday'];
-    //         const dayLower = day.toLowerCase();
-    //         if (workspace.workingDays === 'weekdays' && !weekdays.includes(dayLower)) {
-    //             return {
-    //                 isAvailable: false,
-    //                 message: 'Workspace not available on weekends'
-    //             };
-    //         } else if (workspace.workingDays === 'weekends' && !weekends.includes(dayLower)) {
-    //             return {
-    //                 isAvailable: false,
-    //                 message: 'Workspace only available on weekends'
-    //             };
-    //         }
-    //         const workspaceStartTime = new Date(workspace?.startTime).toTimeString().slice(0, 5);
-    //         console.log('workspaceStartTime: ', workspaceStartTime);
-    //         const workspaceEndTime = new Date(workspace?.endTime).toTimeString().slice(0, 5);
-    //         console.log('workspaceEndTime: ', workspaceEndTime);
-    //         if (startTime < workspaceStartTime || endTime > workspaceEndTime) {
-    //             return {
-    //                 isAvailable: false,
-    //                 message: 'Requested time is outside workspace operating hours',
-    //             };
-    //         }
-    //         if (workspace.capacity < seats) {
-    //             return {
-    //                 isAvailable: false,
-    //                 message: 'Not enough seats available for the requested time',
-    //             };
-    //         }
-    //         return {
-    //             isAvailable: true,
-    //             message: 'Workspace is available for the requested time',
-    //         }
-    //     } catch (error) {
-    //         throw error
-    //     }
-    // }
-    // Helper: parse "HH:mm" to a Date in IST
-    parseTimeToIST(timeStr) {
-        const today = new Date().toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
-        return new Date(`${today} ${timeStr}:00 GMT+0530`);
-    }
     async checkAvailability(data) {
         try {
             const { workspaceId, startTime, endTime, seats, day } = data;
             const workspace = await this.workspaceRepository.findWorkspace(workspaceId);
             if (!workspace) {
-                return { isAvailable: false, message: "Workspace not found" };
+                return {
+                    isAvailable: false,
+                    message: 'Workspace not found'
+                };
             }
-            const weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday"];
-            const weekends = ["saturday", "sunday"];
+            const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            const weekends = ['saturday', 'sunday'];
             const dayLower = day.toLowerCase();
-            if (workspace.workingDays === "weekdays" && !weekdays.includes(dayLower)) {
-                return { isAvailable: false, message: "Workspace not available on weekends" };
+            if (workspace.workingDays === 'weekdays' && !weekdays.includes(dayLower)) {
+                return {
+                    isAvailable: false,
+                    message: 'Workspace not available on weekends'
+                };
             }
-            else if (workspace.workingDays === "weekends" && !weekends.includes(dayLower)) {
-                return { isAvailable: false, message: "Workspace only available on weekends" };
+            else if (workspace.workingDays === 'weekends' && !weekends.includes(dayLower)) {
+                return {
+                    isAvailable: false,
+                    message: 'Workspace only available on weekends'
+                };
             }
-            const options = {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-                timeZone: "Asia/Kolkata",
-            };
-            // Workspace hours (ISO from DB)
-            const workspaceStartTime = new Date(workspace.startTime).toLocaleTimeString("en-IN", options);
-            const workspaceEndTime = new Date(workspace.endTime).toLocaleTimeString("en-IN", options);
-            // Request times (HH:mm from client)
-            const requestedStartTime = this.parseTimeToIST(startTime).toLocaleTimeString("en-IN", options);
-            const requestedEndTime = this.parseTimeToIST(endTime).toLocaleTimeString("en-IN", options);
-            console.log("workspaceStartTime (IST):", workspaceStartTime);
-            console.log("workspaceEndTime (IST):", workspaceEndTime);
-            console.log("requestedStartTime (IST):", requestedStartTime);
-            console.log("requestedEndTime (IST):", requestedEndTime);
-            if (requestedStartTime < workspaceStartTime || requestedEndTime > workspaceEndTime) {
-                return { isAvailable: false, message: "Requested time is outside workspace operating hours" };
+            const workspaceStartTime = new Date(workspace === null || workspace === void 0 ? void 0 : workspace.startTime).toTimeString().slice(0, 5);
+            console.log('workspaceStartTime: ', workspaceStartTime);
+            const workspaceEndTime = new Date(workspace === null || workspace === void 0 ? void 0 : workspace.endTime).toTimeString().slice(0, 5);
+            console.log('workspaceEndTime: ', workspaceEndTime);
+            if (startTime < workspaceStartTime || endTime > workspaceEndTime) {
+                return {
+                    isAvailable: false,
+                    message: 'Requested time is outside workspace operating hours',
+                };
             }
             if (workspace.capacity < seats) {
-                return { isAvailable: false, message: "Not enough seats available for the requested time" };
+                return {
+                    isAvailable: false,
+                    message: 'Not enough seats available for the requested time',
+                };
             }
-            return { isAvailable: true, message: "Workspace is available for the requested time" };
+            return {
+                isAvailable: true,
+                message: 'Workspace is available for the requested time',
+            };
         }
         catch (error) {
             throw error;
